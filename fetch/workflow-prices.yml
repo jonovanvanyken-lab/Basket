@@ -1,0 +1,62 @@
+# Copy of .github/workflows/prices.yml, for adding the price job by hand (see README).
+name: Prices
+
+# Every morning: Tesco online prices for every dictionary item and your extra searches,
+# this week's leaflet deals, and the price history. The app can also start a quick run
+# ("Fetch now", recipe links) when you connect it to GitHub in Settings.
+on:
+  schedule:
+    - cron: "17 4 * * *" # 06:17 Prague summer time, 05:17 in winter
+  workflow_dispatch:
+    inputs:
+      queries:
+        description: "Extra Tesco searches, separated by ;"
+        required: false
+        default: ""
+      recipe_url:
+        description: "A recipe page to read"
+        required: false
+        default: ""
+      quick:
+        description: "Only the extra searches and recipe (skip the full run)"
+        required: false
+        default: "false"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: prices
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install
+        run: npm ci --prefix fetch --no-audit --no-fund
+      - name: Fetch prices
+        env:
+          QUERIES: ${{ inputs.queries }}
+          RECIPE_URL: ${{ inputs.recipe_url }}
+          QUICK: ${{ inputs.quick }}
+          TESCO_API_KEY: ${{ secrets.TESCO_API_KEY }}
+        run: node fetch/fetch.mjs
+      - name: Save
+        if: always()
+        run: |
+          git config user.name "price-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data
+          if git diff --cached --quiet; then echo "No changes"; exit 0; fi
+          git commit -q -m "Prices $(date -u +%F\ %H:%M)"
+          for i in 1 2 3; do
+            git pull -q --rebase -X theirs origin "${GITHUB_REF_NAME}" && git push -q && exit 0
+            sleep 7
+          done
+          exit 1

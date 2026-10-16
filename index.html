@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://api.github.com; worker-src 'self' blob:; manifest-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#17603f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Kč Basket">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="app.css?v=1">
+<title>Kč Basket</title>
+</head>
+<body>
+<div id="app">
+  <header class="top">
+    <button class="icon-btn" id="menuBtn" type="button" aria-label="Menu" aria-haspopup="dialog">☰</button>
+    <h1 class="top-title" id="topTitle">List</h1>
+    <span class="spacer"></span>
+    <button class="fresh" id="freshBtn" type="button" aria-label="Price data status"></button>
+  </header>
+  <div class="banners" id="banners"></div>
+  <main class="tab" id="tab-list" data-tab="list"></main>
+  <main class="tab" id="tab-plan" data-tab="plan" hidden></main>
+  <main class="tab" id="tab-shop" data-tab="shop" hidden></main>
+  <main class="tab" id="tab-deals" data-tab="deals" hidden></main>
+  <main class="tab" id="tab-recipes" data-tab="recipes" hidden></main>
+  <nav class="tabbar" aria-label="Sections">
+    <button type="button" data-go="list" aria-current="page"><span class="ti" aria-hidden="true">✎</span>List</button>
+    <button type="button" data-go="plan"><span class="ti" aria-hidden="true">⚖</span>Plan</button>
+    <button type="button" data-go="shop"><span class="ti" aria-hidden="true">✓</span>Shop</button>
+    <button type="button" data-go="deals"><span class="ti" aria-hidden="true">%</span>Deals</button>
+    <button type="button" data-go="recipes"><span class="ti" aria-hidden="true">❦</span>Recipes</button>
+  </nav>
+</div>
+
+<div class="sheet-wrap" id="sheet" hidden>
+  <div class="sheet-back" data-close></div>
+  <section class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="sheet-head"><h2 id="sheetTitle"></h2><button class="icon-btn" type="button" data-close>Close</button></div>
+    <div class="sheet-body" id="sheetBody"></div>
+  </section>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+<noscript><p class="empty">Kč Basket needs JavaScript.</p></noscript>
+<script type="module" src="js/app.js?v=1"></script>
+</body>
+</html>

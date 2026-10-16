@@ -1,0 +1,16 @@
+{
+  "name": "Kč Basket",
+  "short_name": "Kč Basket",
+  "description": "Grocery prices across Tesco, Albert and Lidl: where your list is cheapest.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f3f5f2",
+  "theme_color": "#17603f",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

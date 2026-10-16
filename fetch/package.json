@@ -1,0 +1,9 @@
+{
+  "name": "kc-basket-prices",
+  "private": true,
+  "type": "module",
+  "description": "Daily price fetch for Kč Basket (runs in GitHub Actions)",
+  "dependencies": {
+    "node-html-parser": "^7.0.1"
+  }
+}
