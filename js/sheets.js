@@ -6,7 +6,8 @@ import { CAT_NAME, ITEMS } from "./dict.js";
 import { parseRecipe, parseLine, toItemUnit } from "./recipe.js";
 import { parseReceipt } from "./receipt.js";
 import { customItem } from "./match.js";
-import { $, esc, on, onChange, toast, openSheet, setSheet, closeSheet, kc, storeTag, srcLabel, pills, buyText, ago, dayLabel, lineChart, barChart } from "./ui.js";
+import { $, esc, on, onChange, toast, openSheet, setSheet, closeSheet, kc, storeTag, srcLabel, pills, buyText, ago, dayLabel, lineChart, barChart, pname, thumb } from "./ui.js";
+import { en } from "./translate.js";
 import { fmtQty, kcPer, iso, num, parsePack, perUnit, norm, round2, daysBetween } from "./units.js";
 import { shopGroups, recipeEntries, recipeCost } from "./views.js";
 
@@ -52,14 +53,14 @@ export function renderItemSheet() {
   for (const s of stores) {
     const b = by[s]; const opts = all.filter(x => x.store === s);
     const locked = e?.lock?.[s];
-    html += `<li class="${b && best && b.key === best.key ? "best" : ""}"><span class="nm">${storeTag(s)} ${b ? esc(b.name) : `<span class="muted">${s === "tesco" ? "Not found online" : "No leaflet deal or logged price"}</span>`}
-      ${b ? `<br><span class="src">${esc(srcLabel(b))}</span> ${pills(b)}` : ""}</span>
+    html += `<li class="opt ${b && best && b.key === best.key ? "best" : ""}">${thumb({ img: b?.src === "tesco" ? b.img : null, it })}<span class="nm">${storeTag(s)} ${b ? pname(b.name) : `<span class="muted">${s === "tesco" ? "Not found online" : "No leaflet deal or logged price"}</span>`}
+      ${b ? `<span class="src">${esc(srcLabel(b))}</span> ${pills(b)}` : ""}</span>
       <span class="px">${b ? `${kc(b.cost)}<small>${esc(buyText(b))}${b.unitP ? ` · ${esc(kcPer(b.unitP))}` : ""}</small>` : "–"}</span>
       ${opts.length > 1 || locked ? `<span class="lock">${opts.length > 1 ? `<button class="link" type="button" data-act="toggleOpts" data-store="${s}">${cur.open === s ? "Hide options" : `All ${opts.length} options`}</button>` : ""}${locked ? `<button class="link" type="button" data-act="unlock" data-store="${s}">Any brand again</button>` : ""}</span>` : ""}</li>`;
     if (cur.open === s) {
       const ranked = opts.map(o => ({ o, k: costFor(o, need, it) })).filter(x => x.k).sort((a, b) => a.k.cost - b.k.cost);
       for (const { o, k } of ranked) {
-        html += `<li style="padding-left:12px"><span class="nm small">${esc(o.name)}<br><span class="src">${esc(srcLabel(o))}</span> ${pills(o)}</span><span class="px">${kc(k.cost)}<small>${esc(buyText({ ...o, ...k }))}${k.unitP ? ` · ${esc(kcPer(k.unitP))}` : ""}</small></span>
+        html += `<li class="opt sub">${thumb({ img: o.src === "tesco" ? o.img : null, it })}<span class="nm small">${pname(o.name)}<span class="src">${esc(srcLabel(o))}</span> ${pills(o)}</span><span class="px">${kc(k.cost)}<small>${esc(buyText({ ...o, ...k }))}${k.unitP ? ` · ${esc(kcPer(k.unitP))}` : ""}</small></span>
           ${e ? `<span class="lock">${locked === o.key ? `<span class="pill ok">Chosen</span>` : `<button class="link" type="button" data-act="lock" data-store="${s}" data-key="${esc(o.key)}">Always this one at ${esc(STORES[s].name)}</button>`}</span>` : ""}</li>`;
       }
     }
@@ -140,7 +141,7 @@ export function openBook() {
     <div class="btnrow" style="margin-top:0"><button class="primary" type="button" data-act="bookAdd">Log a price</button><button class="ghost" type="button" data-act="receipt">Read a receipt</button></div>
     ${names.length ? names.map(id => `<div><h3>${esc(itemOf(id)?.name || id)}</h3><ul class="prices">${groups[id].map(e => {
       const u = e.loose ? { p: e.p, per: e.per } : perUnit(e.p, e.pk);
-      return `<li><span class="nm">${storeTag(e.store)} ${esc(e.name)}<br><span class="src">${esc(ago(e.date))}${e.src === "receipt" ? " · receipt" : e.src === "paid" ? " · paid" : ""}${e.app ? ` · ${esc(LOYALTY[e.store])}` : ""}</span></span>
+      return `<li><span class="nm">${storeTag(e.store)} ${pname(e.name)}<span class="src">${esc(ago(e.date))}${e.src === "receipt" ? " · receipt" : e.src === "paid" ? " · paid" : ""}${e.app ? ` · ${esc(LOYALTY[e.store])}` : ""}</span></span>
         <span class="px">${kc(e.p)}<small>${e.loose ? "loose" : esc(fmtQty(e.pk?.v, e.pk?.u))}${u ? ` · ${esc(kcPer(u))}` : ""}</small></span>
         <span class="lock"><button class="link" type="button" data-act="bookDel" data-id="${esc(e.id)}" style="color:var(--bad)">Delete</button></span></li>`;
     }).join("")}</ul></div>`).join("") : `<div class="empty">No prices logged yet.</div>`}`);
@@ -194,7 +195,7 @@ function showReceipt(text, img) {
   out.innerHTML = `${img ? `<img class="shot" src="${img}" alt="Your receipt">` : ""}
     <div class="grid2"><label class="field"><span class="label">Store</span><select id="rcStore">${storeOptions(r.store || "lidl", true)}</select></label><label class="field"><span class="label">Date</span><input id="rcDate" type="date" value="${r.date || iso()}"></label></div>
     <p class="hint">Check each line. Unticked lines aren't saved. Pick the item where it guessed wrong.</p>
-    <div class="parse-rows">${r.rows.map((x, i) => `<div class="prow${x.item ? "" : " off"}" data-i="${i}"><input type="checkbox" class="rcOn" ${x.item ? "checked" : ""} aria-label="Save this line"><div><div class="raw">${esc(x.text)}${x.qty > 1 ? ` · ${x.qty} × ${kc(x.unitPrice)}` : ""}${x.weightKg ? ` · ${String(x.weightKg).replace(".", ",")} kg × ${kc(x.perKg)}/kg` : ""}</div></div>
+    <div class="parse-rows">${r.rows.map((x, i) => `<div class="prow${x.item ? "" : " off"}" data-i="${i}"><input type="checkbox" class="rcOn" ${x.item ? "checked" : ""} aria-label="Save this line"><div><div class="raw"><b>${esc(en(x.text))}</b> · ${esc(x.text)}${x.qty > 1 ? ` · ${x.qty} × ${kc(x.unitPrice)}` : ""}${x.weightKg ? ` · ${String(x.weightKg).replace(".", ",")} kg × ${kc(x.perKg)}/kg` : ""}</div></div>
       <div class="ctl"><select class="rcItem" aria-label="Item">${itemOptions(x.item?.id || "")}</select><input class="rcPrice" type="number" step="0.01" inputmode="decimal" value="${x.weightKg ? x.perKg : x.unitPrice}" aria-label="${x.weightKg ? "Price per kg" : "Price per pack"}"><input class="rcPack" type="text" value="${x.weightKg ? "loose" : x.pack ? esc(fmtQty(x.pack.v, x.pack.u)) : x.item ? esc(fmtQty(x.item.pack, x.item.unit)) : ""}" placeholder="size" aria-label="Pack size"></div></div>`).join("")}</div>
     ${r.total ? `<label class="check"><input type="checkbox" id="rcTrip" checked> Also log this shop in Budget (${kc(r.total)})</label>` : `<label class="check"><input type="checkbox" id="rcTrip"> Also log this shop in Budget (${kc(r.rows.reduce((n, x) => n + x.price, 0))})</label>`}
     <p class="hint err" id="rcErr"></p><div class="btnrow"><button class="primary" type="button" data-act="rcSave">Save prices</button></div>
@@ -343,7 +344,7 @@ on("finish", el => {
   openSheet(`Finish at ${STORES[st].name}`, `<p class="hint">${ticked.length} item${ticked.length === 1 ? "" : "s"} ticked. They come off your list, and the shop goes into Budget.</p>
     <div class="grid2"><label class="field"><span class="label">You paid (Kč)</span><input id="fnTotal" type="number" step="0.01" inputmode="decimal" value="${est}"></label><label class="field"><span class="label">Date</span><input id="fnDate" type="date" value="${iso()}" max="${iso()}"></label></div>
     <div><h3>Prices on the shelf <span class="muted small">(optional)</span></h3><p class="hint">Change any price that was different. Ticked ones go into your price book.</p>
-    <div class="parse-rows">${ticked.map((x, i) => `<div class="prow" data-i="${i}" data-id="${esc(x.r.e.id)}"><input type="checkbox" class="fnOn" ${st !== "tesco" ? "checked" : ""} aria-label="Save this price"><div class="raw">${esc(x.r.it?.name || "")}${x.c ? ` · ${esc(x.c.name)}` : ""}</div>
+    <div class="parse-rows">${ticked.map((x, i) => `<div class="prow" data-i="${i}" data-id="${esc(x.r.e.id)}"><input type="checkbox" class="fnOn" ${st !== "tesco" ? "checked" : ""} aria-label="Save this price"><div class="raw">${esc(x.r.it?.name || "")}${x.c ? ` · ${esc(en(x.c.name))}` : ""}</div>
       <div class="ctl" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)"><input class="fnPrice" type="number" step="0.01" inputmode="decimal" value="${x.c ? (x.c.loose ? x.c.unitP?.p ?? "" : x.c.price) : ""}" placeholder="price" aria-label="Price"><input class="fnPack" type="text" value="${x.c?.loose ? "loose" : x.c?.pack ? esc(fmtQty(x.c.pack.v, x.c.pack.u)) : x.r.it ? esc(fmtQty(x.r.it.pack, x.r.it.unit)) : ""}" aria-label="Pack size"></div></div>`).join("")}</div></div>
     <p class="hint err" id="fnErr"></p><div class="btnrow"><button class="primary" type="button" data-act="fnSave" data-store="${esc(st)}">Done</button></div>`);
   finishing = ticked;
@@ -411,12 +412,18 @@ export function openSettings() {
         <label class="field"><span class="label">Token</span><input id="ghToken" type="password" autocomplete="off" spellcheck="false" value="${g.token ? "••••••••" : ""}" placeholder="github_pat_…"></label>
         <p class="hint" id="ghMsg"></p><div class="btnrow" style="margin-top:0"><button class="primary" type="submit">Save and test</button>${g.token ? `<button class="ghost" type="button" data-act="ghForget">Forget token</button>` : ""}</div></form>
       <p class="fine"><a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Create a token on GitHub</a></p></div>
+    <div><h3>Names and photos</h3>
+      <div class="switch-row"><span>Product photos <span class="muted small">loaded from Tesco's image server</span></span><input type="checkbox" data-change="photos" ${st.photos !== false ? "checked" : ""} aria-label="Product photos"></div>
+      <div class="switch-row"><span>Czech name under the English <span class="muted small">handy on the shelf</span></span><input type="checkbox" data-change="showCz" ${st.showCz !== false ? "checked" : ""} aria-label="Show Czech names"></div>
+      <p class="fine">${DATA.status?.translate?.method === "deepl" ? "English names come from DeepL, read with the daily prices." : "English names come from a built-in grocery glossary, word for word. Add a free DeepL key to the repository for natural translations (see the README)."}</p></div>
     <div><h3>Appearance</h3><div class="seg">${["auto", "light", "dark"].map(t => `<button type="button" data-act="theme" data-v="${t}" aria-pressed="${st.theme === t}">${t[0].toUpperCase() + t.slice(1)}</button>`).join("")}</div></div>
     <div><h3>Backup</h3><p class="hint">Your list, recipes, price book and shops, as one file.</p><div class="btnrow"><button class="ghost" type="button" data-act="backup">Save a backup</button><label class="ghost" style="cursor:pointer;text-align:center">Restore<input type="file" accept="application/json,.json" data-change="restore" hidden></label></div></div>
     <div><h3>Start again</h3><button class="danger" type="button" data-act="resetAll">Delete everything on this device</button></div>
-    <p class="fine">Kč Basket · version 1. Prices: Tesco from nakup.itesco.cz, leaflet deals from kupi.cz, read once a day.</p>`);
+    <p class="fine">Kč Basket · version 2. Prices: Tesco from nakup.itesco.cz, leaflet deals from kupi.cz, read once a day.</p>`);
 }
 onChange("storeOn", el => { S().settings.stores[el.dataset.store] = el.checked; DATA.index.cache.clear(); changed(); openSettings(); });
+onChange("photos", el => { S().settings.photos = el.checked; changed(); });
+onChange("showCz", el => { S().settings.showCz = el.checked; changed(); });
 onChange("loyalty", el => { S().settings.loyalty[el.dataset.store] = el.checked; changed(); });
 onChange("splitMin", el => { S().settings.splitMin = Math.max(0, num(el.value) || 0); changed(); });
 onChange("bookMaxAge", el => { S().settings.bookMaxAge = Math.max(7, Math.round(num(el.value) || 120)); changed(); });

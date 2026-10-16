@@ -50,7 +50,7 @@ export function candidates(it, ctx) {
       if (p.avail === false) continue;
       const pack = p.pk || null, loose = !!p.loose;
       const unit = p.u ? { p: p.u, per: p.per } : perUnit(p.p, pack);
-      const common = { store: "tesco", src: "tesco", key: "t:" + p.id, pid: p.id, name: p.t, pack, loose, seen: (index.tFetched || "").slice(0, 10), promo: p.promo || "" };
+      const common = { store: "tesco", src: "tesco", key: "t:" + p.id, pid: p.id, name: p.t, img: p.i || null, pack, loose, seen: (index.tFetched || "").slice(0, 10), promo: p.promo || "" };
       base.push({ ...common, price: p.p, unit, loyalty: false, until: p.promoUntil || null });
       if (p.cc && p.cc < p.p) base.push({ ...common, key: "tc:" + p.id, price: p.cc, unit: p.ccU ? { p: p.ccU, per: p.per } : perUnit(p.cc, pack) || scaleUnit(unit, p.cc / p.p), loyalty: true, until: p.ccUntil || null });
     }

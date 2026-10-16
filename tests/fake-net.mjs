@@ -18,5 +18,10 @@ globalThis.fetch = async (url, opts = {}) => {
     return reply(empty);
   }
   if (u.host === "example.com") return reply(page("recipe.html"));
+  if (u.host === "api-free.deepl.com") {
+    const body = JSON.parse(opts.body); globalThis.__deeplCalls = (globalThis.__deeplCalls || 0) + 1;
+    if (opts.headers.Authorization !== "DeepL-Auth-Key test-key:fx") return reply("", 403);
+    return reply(JSON.stringify({ translations: body.text.map(t => ({ text: "EN " + t })) }));
+  }
   throw new Error("unexpected request " + u.href);
 };

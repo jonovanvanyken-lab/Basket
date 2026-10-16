@@ -245,3 +245,27 @@ export const ITEMS = ROWS.trim().split("\n").filter(l => l && !l.startsWith("#")
 export const BY_ID = Object.fromEntries(ITEMS.map(x => [x.id, x]));
 // Swaps are listed one-way in the table; make them usable both ways where it makes sense (fresh ↔ frozen).
 for (const x of ITEMS) for (const s of x.subs) if (!BY_ID[s]) console.warn("unknown swap", x.id, s);
+
+// Icons for items without a product photo (leaflet deals, your own prices).
+export const CAT_ICON = { produce: "🥬", bakery: "🥖", meat: "🥩", deli: "🥓", dairy: "🧀", frozen: "🧊", pantry: "🥫", snacks: "🍫", drinks: "🧃", household: "🧻", other: "🛒" };
+const ICONS = {
+  onion: "🧅", "red-onion": "🧅", "spring-onion": "🧅", garlic: "🧄", ginger: "🫚", potato: "🥔", "sweet-potato": "🍠", carrot: "🥕",
+  parsley: "🌿", coriander: "🌿", basil: "🌿", dill: "🌿", chives: "🌿", mint: "🌿", lemon: "🍋", lime: "🍋", orange: "🍊", apple: "🍎",
+  banana: "🍌", pear: "🍐", grapes: "🍇", strawberries: "🍓", blueberries: "🫐", raspberries: "🍓", avocado: "🥑", tomato: "🍅",
+  "cherry-tomatoes": "🍅", cucumber: "🥒", "bell-pepper": "🫑", chilli: "🌶️", zucchini: "🥒", eggplant: "🍆", broccoli: "🥦",
+  "frozen-broccoli": "🥦", cauliflower: "🥦", spinach: "🥬", "frozen-spinach": "🥬", lettuce: "🥬", "salad-leaves": "🥗", cabbage: "🥬",
+  "red-cabbage": "🥬", mushrooms: "🍄", peas: "🫛", corn: "🌽", pumpkin: "🎃", leek: "🧅", "green-beans": "🫛",
+  "frozen-berries": "🫐", fries: "🍟", "ice-cream": "🍨", bread: "🍞", "toast-bread": "🍞", rolls: "🥖", baguette: "🥖",
+  tortillas: "🫓", pita: "🫓", dumplings: "🍞", "chicken-breast": "🍗", "chicken-thigh": "🍗", "chicken-whole": "🍗",
+  "chicken-wings": "🍗", lamb: "🍖", salmon: "🐟", "smoked-salmon": "🐟", "white-fish": "🐟", tuna: "🐟", prawns: "🦐", bacon: "🥓",
+  ham: "🥓", salami: "🥓", sausages: "🌭", eggs: "🥚", milk: "🥛", "plant-milk": "🥛", cream: "🥛", yoghurt: "🥛", butter: "🧈",
+  margarine: "🧈", rice: "🍚", pasta: "🍝", "lasagne-sheets": "🍝", noodles: "🍜", oats: "🥣", cereal: "🥣", flour: "🌾",
+  sugar: "🍬", honey: "🍯", "olive-oil": "🫒", oil: "🫗", olives: "🫒", "soy-sauce": "🫗", ketchup: "🍅", "peanut-butter": "🥜",
+  peanuts: "🥜", almonds: "🥜", walnuts: "🌰", chocolate: "🍫", cocoa: "🍫", salt: "🧂", pepper: "🧂", tea: "🍵", coffee: "☕",
+  water: "💧", juice: "🧃", beer: "🍺", "red-wine": "🍷", "white-wine": "🥂", crisps: "🥔", biscuits: "🍪", jam: "🍓", tofu: "🧈",
+  "toilet-paper": "🧻", "paper-towels": "🧻", "dish-soap": "🧽", "dishwasher-tabs": "🧽", laundry: "🧺", "bin-bags": "🗑️",
+  shampoo: "🧴", toothpaste: "🪥", soap: "🧼", foil: "📦", "beef-mince": "🥩", "mixed-mince": "🥩", "pork-mince": "🥩",
+  "turkey-mince": "🥩", "beef-steak": "🥩", "beef-stew": "🥩", "pork-shoulder": "🥩", "pork-loin": "🥩", "pork-belly": "🥓",
+};
+for (const x of ITEMS) x.ic = ICONS[x.id] || CAT_ICON[x.cat] || "🛒";
+export const iconOf = it => (it ? it.ic || CAT_ICON[it.cat] || "🛒" : "🛒");

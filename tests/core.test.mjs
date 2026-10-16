@@ -6,6 +6,7 @@ import { BY_ID, ITEMS } from "../js/dict.js";
 import { parseLine, parseRecipe } from "../js/recipe.js";
 import { parseReceipt } from "../js/receipt.js";
 import { buildIndex, makePlan, costFor, assignment } from "../js/plan.js";
+import { glossary, en, useSaved } from "../js/translate.js";
 
 test("numbers", () => {
   assert.equal(num("1 234,50"), 1234.5); assert.equal(num("1,5"), 1.5); assert.equal(num("½"), 0.5);
@@ -137,4 +138,16 @@ test("costs and plan", () => {
   assert.equal(r.banana.best.cost, Math.round(29.9 * 0.72 * 100) / 100);
   assert.equal(plan.bestSingle.store, "tesco");
   const asg = assignment(plan, "cheapest"); assert.equal(asg.b, "lidl");
+});
+
+test("English names", () => {
+  const cases = [
+    ["Tesco Máslo 82% tuku 250g", "Tesco butter 82% fat 250g"], ["Kuřecí prsní řízky", "Chicken breast schnitzels"],
+    ["Rajčata cherry", "Cherry tomatoes"], ["Hovězí mleté maso 500g", "Beef mince 500g"], ["Smetana ke šlehání 31% 250ml", "Whipping cream 31% 250ml"],
+    ["Vepřová krkovice bez kosti", "Pork neck boneless"], ["Toaletní papír 3vrstvý 8 ks", "Toilet paper 3-ply 8 pcs"],
+    ["Prací prášek Ariel", "Washing powder Ariel"], ["Brambory konzumní pozdní", "Potatoes late"], ["Zázvor", "Ginger"],
+  ];
+  for (const [cz, e] of cases) assert.equal(glossary(cz).text, e, cz);
+  assert.equal(en("Madeta"), "Madeta"); // unknown words are kept
+  useSaved({ "Rajčata cherry": "Cherry tomatoes (DeepL)" }); assert.equal(en("Rajčata cherry"), "Cherry tomatoes (DeepL)"); useSaved({});
 });

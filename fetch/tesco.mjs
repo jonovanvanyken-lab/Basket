@@ -11,7 +11,7 @@ const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
 const SEARCH = `query Search($query: String!, $page: Int = 1, $count: Int) {
   search(query: $query, page: $page, count: $count) {
     results { node { __typename ... on ProductInterface {
-      tpnc tpnb title brandName isForSale productType
+      tpnc tpnb title brandName isForSale productType defaultImageUrl
       sellers { results { price { actual unitPrice unitOfMeasure } promotions { description startDate endDate attributes price { afterDiscount beforeDiscount } } } }
     } } }
   }
@@ -92,6 +92,8 @@ export function fromNode(n) {
   const uom = norm(s.price?.unitOfMeasure || n.price?.unitOfMeasure || "");
   const per = /kg/.test(uom) ? "kg" : /^l|litr/.test(uom) ? "l" : uom ? "ks" : null;
   const p = { id: String(n.tpnc), t: n.title, p: round2(price), pk: parsePack(n.title) };
+  const img = compactImg(n.defaultImageUrl || n.imageUrl || n.image);
+  if (img) p.i = img;
   const up = s.price?.unitPrice ?? n.price?.unitPrice;
   if (up > 0 && per) { p.u = round2(up); p.per = per; }
   if (n.productType && /loose|weight|catch/i.test(n.productType)) p.loose = true;
@@ -173,7 +175,12 @@ function scanTiles(html) {
     }
     const text = tile.text.replace(/\s+/g, " ").trim();
     const p = tileText(id, t, text);
-    if (p) out.push(p);
+    if (p) {
+      const im = tile.querySelector("img");
+      const src = im && (im.getAttribute("src") || (im.getAttribute("srcset") || "").split(/\s/)[0]);
+      const img = compactImg(src); if (img) p.i = img;
+      out.push(p);
+    }
   }
   return out;
 }
@@ -197,4 +204,12 @@ export function tileText(id, title, text) {
   if (multi) { p.promo = `${multi[1]} za ${multi[2]} Kč`; p.promoUntil = until; }
   if (/nedostupn|vyprodan|není skladem|neni skladem/i.test(rest)) p.avail = false;
   return p;
+}
+
+/** Tesco's image address without the shared prefix and size, to keep the data file small. */
+export const IMG_PREFIX = "https://digitalcontent.api.tesco.com/v2/media/ghs/";
+export function compactImg(u) {
+  if (!u || typeof u !== "string" || !/^https:\/\/digitalcontent\.api\.tesco\.com\//.test(u)) return null;
+  const clean = u.split("?")[0];
+  return clean.startsWith(IMG_PREFIX) ? clean.slice(IMG_PREFIX.length) : clean;
 }

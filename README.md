@@ -41,6 +41,17 @@ Tesco's online prices can differ from its Express stores, so they're labelled "T
 
 Tap any item to see every shop's price, choose a specific brand per shop, log a price, or see its price history.
 
+## English names and photos
+
+Product, deal and receipt names show in English, with the Czech name in small grey text underneath, which helps on the shelf. Tesco products show their photo. Leaflet deals have no photos, so they show an icon for the item. Both can be switched off in **Settings → Names and photos**. Photos are kept on the phone, so the shopping list still shows them without signal.
+
+Out of the box the English comes from a built-in grocery glossary, word for word ("Kuřecí prsní řízky" → "Chicken breast schnitzels"). For natural translations, add a free DeepL key:
+
+1. Sign up for **DeepL API Free** at deepl.com/pro-api. It asks for a card to confirm who you are, but the free plan isn't charged. Copy your key from **Account → API Keys**. It ends in `:fx`.
+2. In your GitHub repository: **Settings → Secrets and variables → Actions → New repository secret**. Name it `DEEPL_KEY` and paste the key.
+
+From the next daily run, every new name is translated once and saved in `data/translations.json`. The free allowance (500,000 characters a month) covers this comfortably. If it ever runs out, the glossary fills in until it resets.
+
 ## The GitHub connection (optional)
 
 Without it, the app works from the daily prices. With it, you can press **Fetch now**, read recipe links, and give your own items (ones not in the dictionary) their own Tesco search straight away.

@@ -6,8 +6,9 @@ import { parseLine } from "./recipe.js";
 import { customItem, findItemByName } from "./match.js";
 import { iso, norm, round } from "./units.js";
 import { GitHub, sha1hex } from "./gh.js";
+import { useSaved } from "./translate.js";
 
-export const DATA = { tesco: null, deals: null, history: null, status: null, index: buildIndex(null, null), loaded: false, error: null };
+export const DATA = { tesco: null, deals: null, history: null, status: null, translations: null, index: buildIndex(null, null), loaded: false, error: null };
 
 const OVERRIDE = "kcb-fresh"; // fresher copies read straight from GitHub after "Fetch now"
 async function fromCache(name) {
@@ -19,7 +20,7 @@ export async function putFresh(name, text) {
 const stamp = j => (j && (j.fetchedAt || j.runAt || j.updated)) || "";
 
 export async function loadData() {
-  const names = ["tesco", "deals", "history", "status"];
+  const names = ["tesco", "deals", "history", "status", "translations"];
   const got = await Promise.all(names.map(async n => {
     let net = null;
     try { const r = await fetch(`data/${n}.json`, { cache: "no-cache" }); if (r.ok) net = await r.json(); } catch {}
@@ -27,6 +28,7 @@ export async function loadData() {
     return fresh && stamp(fresh) > stamp(net) ? fresh : net;
   }));
   names.forEach((n, i) => { DATA[n] = got[i]; });
+  useSaved(DATA.translations);
   DATA.index = buildIndex(DATA.tesco, DATA.deals);
   DATA.loaded = true;
   bump();

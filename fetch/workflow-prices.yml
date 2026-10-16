@@ -46,6 +46,7 @@ jobs:
           RECIPE_URL: ${{ inputs.recipe_url }}
           QUICK: ${{ inputs.quick }}
           TESCO_API_KEY: ${{ secrets.TESCO_API_KEY }}
+          DEEPL_KEY: ${{ secrets.DEEPL_KEY }}
         run: node fetch/fetch.mjs
       - name: Save
         if: always()

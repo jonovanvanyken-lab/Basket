@@ -14,6 +14,7 @@ import { Tesco } from "./tesco.mjs";
 import { fetchShop, SHOP_SLUGS } from "./kupi.mjs";
 import { readRecipeUrl } from "./recipe-url.mjs";
 import { updateHistory } from "./history.mjs";
+import { translateNames } from "./translate-job.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const DATA = process.env.DATA_DIR || join(ROOT, "data");
@@ -102,6 +103,16 @@ async function main() {
     }
     deals = { fetchedAt: runAt, source: "kupi.cz", deals: all };
     await save("deals.json", deals);
+  }
+
+  // ---- English names (DeepL, when a key is set up) ----
+  if (!QUICK || extra.length) {
+    const cache = await readJson("translations.json", {});
+    // most useful first: Tesco products, then the Tesco, Albert and Lidl leaflets, then the rest
+    const main = new Set(["tesco", "albert", "lidl"]);
+    const names = [...Object.values(tesco.products).map(p => p.t), ...(deals.deals || []).filter(d => main.has(d.s)).map(d => d.n), ...(deals.deals || []).filter(d => !main.has(d.s)).map(d => d.n)];
+    status.translate = await translateNames(names, cache, { key: (env.DEEPL_KEY || "").trim(), log });
+    if (status.translate.added || !Object.keys(cache).length) await save("translations.json", cache);
   }
 
   // ---- history ----

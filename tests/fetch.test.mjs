@@ -21,6 +21,7 @@ test("Tesco tiles", async () => {
   assert.equal(by["2001022222"].p, 11.9); assert.equal(by["2001022222"].promo, "3 za 23,80 Kč");
   assert.equal(by["2001033333"].loose, true);
   assert.equal(by["2001044444"].avail, false);
+  assert.equal(by["2001018475"].i, "ccc-333/ddd-444_555.jpeg");
 });
 
 test("Tesco embedded JSON", async () => {
@@ -28,6 +29,7 @@ test("Tesco embedded JSON", async () => {
   assert.equal(ps.length, 2);
   assert.equal(ps[0].p, 54.9); assert.equal(ps[0].cc, 44.9); assert.equal(ps[0].ccUntil, "2026-10-27"); assert.equal(ps[0].u, 219.6);
   assert.equal(ps[1].t, "Kuřecí prsní řízky 500g");
+  assert.equal(ps[0].i, "aaa-111/bbb-222_123.jpeg");
   assert.equal(fromNode({ tpnc: "1", title: "x", sellers: { results: [{ price: { actual: 0 } }] } }), null);
 });
 
@@ -51,7 +53,7 @@ test("recipe page", async () => {
 test("whole fetch job against a fake network", async () => {
   const dir = await mkdtemp(join(tmpdir(), "kcb-"));
   const run = promisify(execFile);
-  const env = { ...process.env, DATA_DIR: dir, FAST: "1", STORES: "lidl,albert", RECIPE_URL: "https://example.com/curry", FIXTURES: new URL("./fixtures/", import.meta.url).pathname };
+  const env = { ...process.env, DATA_DIR: dir, FAST: "1", STORES: "lidl,albert", RECIPE_URL: "https://example.com/curry", DEEPL_KEY: "test-key:fx", FIXTURES: new URL("./fixtures/", import.meta.url).pathname };
   const { stdout } = await run(process.execPath, ["--import", new URL("./fake-net.mjs", import.meta.url).pathname, new URL("../fetch/fetch.mjs", import.meta.url).pathname], { env, timeout: 120000 });
   const status = JSON.parse(await readFile(join(dir, "status.json"), "utf8"));
   assert.equal(status.tesco.method, "html", stdout);
@@ -67,4 +69,8 @@ test("whole fetch job against a fake network", async () => {
   assert.equal(imp.length, 1);
   const rec = JSON.parse(await readFile(join(dir, "imports", imp[0]), "utf8"));
   assert.equal(rec.lines.length, 7);
+  const tr = JSON.parse(await readFile(join(dir, "translations.json"), "utf8"));
+  assert.equal(tr["Rajčata cherry"], "EN Rajčata cherry");
+  assert.equal(tr["Tesco Máslo 82% tuku 250g"], "EN Tesco Máslo 82% tuku 250g");
+  assert.equal(status.translate.method, "deepl"); assert.ok(status.translate.added > 5);
 });

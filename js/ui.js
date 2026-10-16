@@ -1,6 +1,9 @@
 // Small DOM helpers, formatting, sheets, toasts and SVG charts.
 import { kc, daysBetween, iso, fmtQty } from "./units.js";
 import { STORES, LOYALTY } from "./plan.js";
+import { en, differs } from "./translate.js";
+import { iconOf, CAT_ICON } from "./dict.js";
+import { S } from "./state.js";
 
 export const $ = id => document.getElementById(id);
 export const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -123,3 +126,26 @@ export function barChart(rows, { fmt = v => kc(v, true) } = {}) {
   const max = Math.max(1, ...rows.map(r => r.v), ...rows.map(r => r.line || 0));
   return `<div class="bars">${rows.map(r => `<div class="bar"><div class="bar-top"><span>${r.label}</span><span class="v">${fmt(r.v)}${r.sub ? ` <span class="muted">${r.sub}</span>` : ""}</span></div><div class="track"><div class="fill ${esc(r.cls || "")}" style="width:${Math.round((r.v / max) * 100)}%"></div></div></div>`).join("")}</div>`;
 }
+
+// ---- English names and pictures ----
+export const TESCO_IMG = "https://digitalcontent.api.tesco.com/v2/media/ghs/";
+export const imgUrl = i => (i.startsWith("http") ? i : TESCO_IMG + i) + "?w=140";
+const showCz = () => S()?.settings?.showCz !== false;
+/** A Czech product name shown in English, with the Czech underneath (when it differs and the setting is on). */
+export function pname(cz, { cls = "" } = {}) {
+  const e = en(cz);
+  return `<span class="pn ${cls}">${esc(e)}</span>${showCz() && differs(cz, e) ? `<span class="czn">${esc(cz)}</span>` : ""}`;
+}
+/** The item's Czech name as a small grey line (for finding it on the shelf). */
+export const czLine = it => (it && !it.custom && showCz() ? `<span class="czn">${esc(it.cz)}</span>` : "");
+/** Product photo (Tesco) or the item's icon. */
+export function thumb({ img = null, it = null, cat = "other", big = false } = {}) {
+  const ic = it ? iconOf(it) : CAT_ICON[cat] || "🛒";
+  if (img && S()?.settings?.photos !== false) return `<span class="th${big ? " big" : ""}"><img src="${esc(imgUrl(img))}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-ic="${esc(ic)}"></span>`;
+  return `<span class="th ic${big ? " big" : ""}" aria-hidden="true">${ic}</span>`;
+}
+/** A photo that fails to load turns back into the icon. */
+document.addEventListener("error", ev => {
+  const t = ev.target;
+  if (t?.tagName === "IMG" && t.dataset.ic && t.parentElement?.classList.contains("th")) { const p = t.parentElement; p.classList.add("ic"); p.textContent = t.dataset.ic; }
+}, true);

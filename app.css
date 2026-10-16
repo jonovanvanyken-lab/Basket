@@ -221,3 +221,24 @@ input[type=checkbox]{width:22px;height:22px;flex:none;accent-color:var(--accent)
 .status-list code{font-family:var(--f-mono);font-size:12px;color:var(--muted);overflow-wrap:anywhere}
 .shot{width:100%;max-height:180px;object-fit:cover;object-position:top;border-radius:10px;border:1px solid var(--line)}
 @media (prefers-reduced-motion:reduce){.fill{transition:none}}
+
+/* photos, icons and English names */
+.th{width:46px;height:46px;flex:none;border-radius:10px;background:#fff;border:1px solid var(--line);display:grid;place-items:center;overflow:hidden}
+.th img{width:100%;height:100%;object-fit:contain;display:block}
+.th.ic{background:var(--track);border-color:transparent;font-size:23px;line-height:1}
+.th.big{width:72px;height:72px;font-size:36px}
+.th.sm{width:34px;height:34px;font-size:18px}
+.items>li.withth{grid-template-columns:auto auto minmax(0,1fr) auto}
+.items>li.planrow{grid-template-columns:auto minmax(0,1fr) auto}
+.items .prod{display:block;font-size:13px;color:var(--ink);opacity:.85;margin-top:1px;overflow-wrap:anywhere}
+.czn{display:block;font-size:12px;color:var(--muted);font-weight:400;line-height:1.3;overflow-wrap:anywhere}
+.items .nm+.czn{margin-top:1px}
+.dealrow{grid-template-columns:auto minmax(0,1fr) auto;align-items:start}
+.dealrow .add{grid-column:2/-1}
+.prices li.opt{grid-template-columns:auto minmax(0,1fr) auto}
+.prices li.opt.sub{padding-left:14px}
+.prices li.opt .lock{grid-column:2/-1}
+.prices .nm .pn{font-weight:600}
+.prices .src{display:block}
+.raw b{color:var(--ink);font-weight:650}
+@media (max-width:360px){.th{width:36px;height:36px;font-size:18px}.items>li{column-gap:8px}.panel{padding:14px 12px}.items .px{font-size:13.5px}}

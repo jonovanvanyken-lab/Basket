@@ -4,7 +4,8 @@ import { DATA, plan, planFor, itemOf, enabledStores, ctx } from "./core.js";
 import { assignment, STORES, LOYALTY, unitInBase } from "./plan.js";
 import { CATS, CAT_NAME, CAT_ORDER, ITEMS } from "./dict.js";
 import { findItem } from "./match.js";
-import { esc, kc, storeTag, srcLabel, pills, buyText, dayLabel, ago } from "./ui.js";
+import { esc, kc, storeTag, srcLabel, pills, buyText, dayLabel, ago, pname, czLine, thumb } from "./ui.js";
+import { en } from "./translate.js";
 import { fmtQty, kcPer, iso, norm, round2 } from "./units.js";
 
 const qtyLabel = (e, it) => (e.qty ? fmtQty(e.qty.v, e.qty.u) : it ? `1 pack` : "");
@@ -46,10 +47,11 @@ export function renderList() {
     html += `<div class="cat-h"><span class="label">${esc(CAT_NAME[cat] || "Other")}</span></div><ul class="items">`;
     for (const { e, it, r } of rows) {
       const best = r?.best;
-      html += `<li class="${e.have ? "have" : ""}">
+      html += `<li class="withth ${e.have ? "have" : ""}">
         <input type="checkbox" data-change="have" data-id="${esc(e.id)}" ${e.have ? "checked" : ""} aria-label="Already have ${esc(it?.name || "")}">
+        ${thumb({ img: !e.have && best?.src === "tesco" ? best.img : null, it })}
         <button class="rowbtn" type="button" data-act="openEntry" data-id="${esc(e.id)}">
-          <span class="nm">${esc(it?.name || "?")}</span>${it && !it.custom ? ` <span class="cz">${esc(it.cz)}</span>` : ""}
+          <span class="nm">${esc(it?.name || "?")}</span>${czLine(it)}
           <span class="meta"><span class="qty">${esc(qtyLabel(e, it))}</span>${e.have ? `<span>At home</span>` : best ? `${storeTag(best.store)}<span class="src">${esc(srcLabel(best))}</span>` : `<span>No price yet</span>`}${e.lock && Object.keys(e.lock).length ? `<span class="pill">Brand chosen</span>` : ""}</span>
         </button>
         <span class="px">${e.have ? "" : best ? `${kc(best.cost)}<small>${esc(buyText(best))}</small>` : "–"}</span></li>`;
@@ -88,8 +90,8 @@ export function renderPlan() {
   for (const r of priced) {
     const c = r.by[asg[r.e.id]];
     const away = mode === "single" && bs && asg[r.e.id] !== bs.store;
-    html += `<li style="grid-template-columns:minmax(0,1fr) auto">
-      <button class="rowbtn" type="button" data-act="openEntry" data-id="${esc(r.e.id)}"><span class="nm">${esc(r.it.name)}</span> <span class="cz">${esc(c.name)}</span>
+    html += `<li class="planrow">${thumb({ img: c.src === "tesco" ? c.img : null, it: r.it })}
+      <button class="rowbtn" type="button" data-act="openEntry" data-id="${esc(r.e.id)}"><span class="nm">${esc(r.it.name)}</span><span class="prod">${pname(c.name)}</span>
         <span class="meta">${storeTag(c.store)}<span class="qty">${esc(qtyLabel(r.e, r.it))}</span><span class="src">${esc(srcLabel(c))}</span>${pills(c, r)}${away ? `<span class="pill warn">Not priced at ${esc(STORES[bs.store].name)}</span>` : ""}</span></button>
       <span class="px">${kc(c.cost)}<small>${esc(buyText(c))}${c.unitP ? `<br>${esc(kcPer(c.unitP))}` : ""}</small></span>
       ${r.swap ? `<button class="swap" type="button" data-act="swap" data-id="${esc(r.e.id)}" data-to="${esc(r.swap.item.id)}" style="grid-column:1/-1">Swap idea: ${esc(r.swap.item.name)} is ${Math.round(r.swap.save * 100)} % cheaper per ${esc(c.unitP?.per || "unit")} at ${esc(STORES[r.swap.cand.store].name)} (${esc(kcPer(r.swap.cand.unitP))})</button>` : ""}</li>`;
@@ -124,8 +126,9 @@ export function renderShop() {
       html += `<li style="display:block;border-top:0;padding:8px 0 0"><span class="label">${esc(CAT_NAME[cat] || "Other")}</span></li>`;
       for (const { r, c } of rows) {
         const on = !!s.checked[r.e.id];
-        html += `<li class="${on ? "done" : ""}"><input type="checkbox" id="ck-${esc(r.e.id)}" data-change="check" data-id="${esc(r.e.id)}" ${on ? "checked" : ""}>
-          <label for="ck-${esc(r.e.id)}" style="display:block;min-width:0"><span class="nm">${esc(r.it?.name || "?")}</span> <span class="cz">${esc(c ? c.name : r.it?.cz || "")}</span>
+        html += `<li class="withth ${on ? "done" : ""}"><input type="checkbox" id="ck-${esc(r.e.id)}" data-change="check" data-id="${esc(r.e.id)}" ${on ? "checked" : ""}>
+          ${thumb({ img: c?.src === "tesco" ? c.img : null, it: r.it })}
+          <label for="ck-${esc(r.e.id)}" style="display:block;min-width:0"><span class="nm">${esc(r.it?.name || "?")}</span>${c ? `<span class="prod">${pname(c.name)}</span>` : czLine(r.it)}
             <span class="meta"><span class="qty">${esc(c ? buyText(c) || qtyLabel(r.e, r.it) : qtyLabel(r.e, r.it))}</span>${c ? `<span class="src">${esc(srcLabel(c))}</span>${c.loyalty ? `<span class="pill card">${esc(LOYALTY[c.store])}</span>` : ""}` : ""}</span></label>
           <span class="px">${c ? kc(c.cost) : ""}</span></li>`;
       }
@@ -157,7 +160,7 @@ export function watchIds() {
 function dealRow(d, it) {
   const until = d.until ? `until ${dayLabel(d.until)}` : "";
   const fmt = d.f && norm(d.f) !== norm(STORES[d.s]?.name || "") ? d.f : "";
-  return `<div class="dealrow"><div><div class="nm">${esc(d.n)}</div><div class="meta">${storeTag(d.s)}${fmt ? `<span>${esc(fmt.replace(/^Albert\s*/i, ""))}</span>` : ""}${d.a ? `<span>${esc(d.a)}</span>` : ""}<span>${esc(until)}</span>${d.d ? `<span class="pill deal">−${d.d} %</span>` : ""}${d.app ? `<span class="pill card">${esc(LOYALTY[d.s])}</span>` : ""}${d.from && d.from > iso() ? `<span class="pill">from ${esc(dayLabel(d.from))}</span>` : ""}</div></div>
+  return `<div class="dealrow">${thumb({ it, cat: d.c })}<div><div class="nm">${pname(d.n)}</div><div class="meta">${storeTag(d.s)}${fmt ? `<span>${esc(fmt.replace(/^Albert\s*/i, ""))}</span>` : ""}${d.a ? `<span>${esc(d.a)}</span>` : ""}<span>${esc(until)}</span>${d.d ? `<span class="pill deal">−${d.d} %</span>` : ""}${d.app ? `<span class="pill card">${esc(LOYALTY[d.s])}</span>` : ""}${d.from && d.from > iso() ? `<span class="pill">from ${esc(dayLabel(d.from))}</span>` : ""}</div></div>
     <div class="px">${kc(d.p)}<small>${d.u ? esc(kcPer(d.u)) : ""}</small></div>
     <div class="add">${it ? `<button class="link" type="button" data-act="addItem" data-id="${esc(it.id)}">+ Add ${esc(it.name.toLowerCase())}</button>` : `<button class="link" type="button" data-act="addDealName" data-name="${esc(d.n)}">+ Add to list</button>`}</div></div>`;
 }
@@ -188,7 +191,7 @@ export function renderDeals() {
     if (!mine.length && !tes.length) html += `<div class="empty">Nothing you usually buy is on offer right now.</div>`;
     else {
       html += mine.map(x => dealRow(x.d, x.it)).join("");
-      html += tes.map(({ p, it, until }) => `<div class="dealrow"><div><div class="nm">${esc(p.t)}</div><div class="meta">${storeTag("tesco")}<span>online</span>${until ? `<span>until ${esc(dayLabel(until))}</span>` : ""}${p.cc ? `<span class="pill card">Clubcard</span>` : ""}${p.promo ? `<span class="pill deal">${esc(p.promo)}</span>` : ""}</div></div>
+      html += tes.map(({ p, it, until }) => `<div class="dealrow">${thumb({ img: p.i, it })}<div><div class="nm">${pname(p.t)}</div><div class="meta">${storeTag("tesco")}<span>online</span>${until ? `<span>until ${esc(dayLabel(until))}</span>` : ""}${p.cc ? `<span class="pill card">Clubcard</span>` : ""}${p.promo ? `<span class="pill deal">${esc(p.promo)}</span>` : ""}</div></div>
         <div class="px">${kc(p.cc || p.p)}<small>${p.cc ? `was ${esc(kc(p.p))}` : p.was ? `was ${esc(kc(p.was))}` : ""}</small></div><div class="add"><button class="link" type="button" data-act="addItem" data-id="${esc(it.id)}">+ Add ${esc(it.name.toLowerCase())}</button></div></div>`).join("");
     }
     html += `<p class="fine">${esc(fetched)}</p></section>`;
@@ -197,11 +200,11 @@ export function renderDeals() {
   if (dealView === "all") {
     const stores = enabledStores();
     const q = norm(dealQuery);
-    let list = all.filter(d => (dealStore === "all" || d.s === dealStore) && (dealCat === "all" || d.c === dealCat) && (!q || norm(d.n).includes(q)));
+    let list = all.filter(d => (dealStore === "all" || d.s === dealStore) && (dealCat === "all" || d.c === dealCat) && (!q || norm(d.n).includes(q) || norm(en(d.n)).includes(q)));
     list.sort((a, b) => (b.d || 0) - (a.d || 0) || a.p - b.p);
     const cats = CATS.filter(([k]) => all.some(d => d.c === k));
     html += `<section class="panel"><div class="filters">
-      <input type="search" placeholder="Search deals (Czech)" value="${esc(dealQuery)}" data-input="dealQ" aria-label="Search deals">
+      <input type="search" placeholder="Search deals (English or Czech)" value="${esc(dealQuery)}" data-input="dealQ" aria-label="Search deals">
       <div class="scroll-chips">${[["all", "All shops"], ...stores.map(s => [s, STORES[s].name])].map(([k, l]) => `<button class="chip${dealStore === k ? " on" : ""}" type="button" data-act="dealFilter" data-k="store" data-v="${k}">${esc(l)}</button>`).join("")}</div>
       <div class="scroll-chips">${[["all", "Everything"], ...cats].map(([k, l]) => `<button class="chip${dealCat === k ? " on" : ""}" type="button" data-act="dealFilter" data-k="cat" data-v="${k}">${esc(l)}</button>`).join("")}</div></div>
       <p class="hint" style="margin-top:8px">${list.length} deal${list.length === 1 ? "" : "s"}, biggest discount first.</p>

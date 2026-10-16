@@ -30,7 +30,7 @@ const products = {}, queries = {};
 T.forEach(([q, t, p, cc, loose], i) => {
   const id = String(2001000000 + i * 37); const pk = loose ? null : parsePack(t);
   const u = loose ? { p, per: "kg" } : perUnit(p, pk);
-  products[id] = { id, t, p, pk, ...(u ? { u: u.p, per: u.per } : {}), ...(loose ? { loose: true } : {}), ...(cc ? { cc, ccU: perUnit(cc, pk)?.p, ccUntil: d(9) } : {}) };
+  products[id] = { id, t, p, pk, i: `sample-${i}/photo.jpeg`, ...(u ? { u: u.p, per: u.per } : {}), ...(loose ? { loose: true } : {}), ...(cc ? { cc, ccU: perUnit(cc, pk)?.p, ccUntil: d(9) } : {}) };
   (queries[q] ||= []).push(id);
 });
 const tesco = { fetchedAt: new Date().toISOString(), source: "sample", products, queries };
