@@ -1,5 +1,5 @@
 {
- "runAt": "2026-10-16T13:39:48.685Z",
+ "runAt": "2026-10-16T14:22:39.534Z",
  "quick": false,
  "tesco": {
   "ok": true,
@@ -12,46 +12,50 @@
   ],
   "errors": [],
   "products": 2686,
-  "at": "2026-10-16T13:39:48.685Z"
+  "at": "2026-10-16T14:22:39.534Z"
  },
  "leaflets": {
   "tesco": {
    "ok": true,
    "deals": 756,
    "errors": [],
-   "at": "2026-10-16T13:39:48.685Z"
+   "at": "2026-10-16T14:22:39.534Z"
   },
   "albert": {
    "ok": true,
    "deals": 1038,
    "errors": [],
-   "at": "2026-10-16T13:39:48.685Z"
+   "at": "2026-10-16T14:22:39.534Z"
   },
   "lidl": {
    "ok": true,
    "deals": 592,
    "errors": [],
-   "at": "2026-10-16T13:39:48.685Z"
+   "at": "2026-10-16T14:22:39.534Z"
   },
   "kaufland": {
    "ok": true,
    "deals": 585,
    "errors": [],
-   "at": "2026-10-16T13:39:48.685Z"
+   "at": "2026-10-16T14:22:39.534Z"
   },
   "penny": {
    "ok": true,
    "deals": 616,
    "errors": [],
-   "at": "2026-10-16T13:39:48.685Z"
+   "at": "2026-10-16T14:22:39.534Z"
   },
   "billa": {
    "ok": true,
-   "deals": 648,
-   "errors": [
-    "alkohol p5: fetch failed"
-   ],
-   "at": "2026-10-16T13:39:48.685Z"
+   "deals": 686,
+   "errors": [],
+   "at": "2026-10-16T14:22:39.534Z"
   }
+ },
+ "translate": {
+  "method": "glossary",
+  "added": 0,
+  "waiting": 5650,
+  "error": null
  }
 }
