@@ -1,5 +1,5 @@
 {
- "runAt": "2026-10-21T04:50:34.803Z",
+ "runAt": "2026-10-22T04:51:06.457Z",
  "quick": false,
  "tesco": {
   "ok": true,
@@ -12,7 +12,7 @@
   ],
   "errors": [],
   "products": 2691,
-  "at": "2026-10-21T04:50:34.803Z"
+  "at": "2026-10-22T04:51:06.457Z"
  },
  "leaflets": {
   "tesco": {
@@ -85,7 +85,7 @@
  "translate": {
   "method": "glossary",
   "added": 0,
-  "waiting": 5759,
+  "waiting": 5651,
   "error": null
  }
 }
