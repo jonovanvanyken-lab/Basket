@@ -1,5 +1,5 @@
 {
- "runAt": "2026-10-22T04:51:06.457Z",
+ "runAt": "2026-10-23T04:50:35.900Z",
  "quick": false,
  "tesco": {
   "ok": true,
@@ -11,8 +11,8 @@
    "using xapi"
   ],
   "errors": [],
-  "products": 2691,
-  "at": "2026-10-22T04:51:06.457Z"
+  "products": 2692,
+  "at": "2026-10-23T04:50:35.900Z"
  },
  "leaflets": {
   "tesco": {
@@ -85,7 +85,7 @@
  "translate": {
   "method": "glossary",
   "added": 0,
-  "waiting": 5651,
+  "waiting": 5652,
   "error": null
  }
 }
