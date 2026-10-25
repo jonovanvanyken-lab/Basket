@@ -1,5 +1,5 @@
 {
- "runAt": "2026-10-24T04:48:52.296Z",
+ "runAt": "2026-10-25T04:50:34.045Z",
  "quick": false,
  "tesco": {
   "ok": true,
@@ -11,51 +11,81 @@
    "using xapi"
   ],
   "errors": [],
-  "products": 2692,
-  "at": "2026-10-24T04:48:52.296Z"
+  "products": 2698,
+  "at": "2026-10-25T04:50:34.045Z"
  },
  "leaflets": {
   "tesco": {
-   "ok": true,
-   "deals": 729,
-   "errors": [],
-   "at": "2026-10-24T04:48:52.296Z"
+   "ok": false,
+   "deals": 0,
+   "errors": [
+    "ovoce-a-zelenina p1: HTTP 403",
+    "pecivo p1: HTTP 403",
+    "maso-drubez-a-ryby p1: HTTP 403",
+    "lahudky p1: HTTP 403"
+   ],
+   "at": null
   },
   "albert": {
-   "ok": true,
-   "deals": 993,
-   "errors": [],
-   "at": "2026-10-24T04:48:52.296Z"
+   "ok": false,
+   "deals": 0,
+   "errors": [
+    "ovoce-a-zelenina p1: HTTP 403",
+    "pecivo p1: HTTP 403",
+    "maso-drubez-a-ryby p1: HTTP 403",
+    "lahudky p1: HTTP 403"
+   ],
+   "at": null
   },
   "lidl": {
-   "ok": true,
-   "deals": 585,
-   "errors": [],
-   "at": "2026-10-24T04:48:52.296Z"
+   "ok": false,
+   "deals": 0,
+   "errors": [
+    "ovoce-a-zelenina p1: HTTP 403",
+    "pecivo p1: HTTP 403",
+    "maso-drubez-a-ryby p1: HTTP 403",
+    "lahudky p1: HTTP 403"
+   ],
+   "at": null
   },
   "kaufland": {
-   "ok": true,
-   "deals": 663,
-   "errors": [],
-   "at": "2026-10-24T04:48:52.296Z"
+   "ok": false,
+   "deals": 0,
+   "errors": [
+    "ovoce-a-zelenina p1: HTTP 403",
+    "pecivo p1: HTTP 403",
+    "maso-drubez-a-ryby p1: HTTP 403",
+    "lahudky p1: HTTP 403"
+   ],
+   "at": null
   },
   "penny": {
-   "ok": true,
-   "deals": 656,
-   "errors": [],
-   "at": "2026-10-24T04:48:52.296Z"
+   "ok": false,
+   "deals": 0,
+   "errors": [
+    "ovoce-a-zelenina p1: HTTP 403",
+    "pecivo p1: HTTP 403",
+    "maso-drubez-a-ryby p1: HTTP 403",
+    "lahudky p1: HTTP 403"
+   ],
+   "at": null
   },
   "billa": {
-   "ok": true,
-   "deals": 919,
-   "errors": [],
-   "at": "2026-10-24T04:48:52.296Z"
+   "ok": false,
+   "deals": 0,
+   "errors": [
+    "ovoce-a-zelenina p1: HTTP 403",
+    "pecivo p1: HTTP 403",
+    "maso-drubez-a-ryby p1: HTTP 403",
+    "lahudky p1: HTTP 403"
+   ],
+   "at": null
   }
  },
  "translate": {
   "method": "glossary",
   "added": 0,
-  "waiting": 5899,
+  "waiting": 5905,
   "error": null
  }
 }
