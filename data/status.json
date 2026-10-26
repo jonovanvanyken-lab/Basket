@@ -1,5 +1,5 @@
 {
- "runAt": "2026-10-25T04:50:34.045Z",
+ "runAt": "2026-10-26T04:53:44.404Z",
  "quick": false,
  "tesco": {
   "ok": true,
@@ -11,81 +11,51 @@
    "using xapi"
   ],
   "errors": [],
-  "products": 2698,
-  "at": "2026-10-25T04:50:34.045Z"
+  "products": 2697,
+  "at": "2026-10-26T04:53:44.404Z"
  },
  "leaflets": {
   "tesco": {
-   "ok": false,
-   "deals": 0,
-   "errors": [
-    "ovoce-a-zelenina p1: HTTP 403",
-    "pecivo p1: HTTP 403",
-    "maso-drubez-a-ryby p1: HTTP 403",
-    "lahudky p1: HTTP 403"
-   ],
-   "at": null
+   "ok": true,
+   "deals": 692,
+   "errors": [],
+   "at": "2026-10-26T04:53:44.404Z"
   },
   "albert": {
-   "ok": false,
-   "deals": 0,
-   "errors": [
-    "ovoce-a-zelenina p1: HTTP 403",
-    "pecivo p1: HTTP 403",
-    "maso-drubez-a-ryby p1: HTTP 403",
-    "lahudky p1: HTTP 403"
-   ],
-   "at": null
+   "ok": true,
+   "deals": 1009,
+   "errors": [],
+   "at": "2026-10-26T04:53:44.404Z"
   },
   "lidl": {
-   "ok": false,
-   "deals": 0,
-   "errors": [
-    "ovoce-a-zelenina p1: HTTP 403",
-    "pecivo p1: HTTP 403",
-    "maso-drubez-a-ryby p1: HTTP 403",
-    "lahudky p1: HTTP 403"
-   ],
-   "at": null
+   "ok": true,
+   "deals": 389,
+   "errors": [],
+   "at": "2026-10-26T04:53:44.404Z"
   },
   "kaufland": {
-   "ok": false,
-   "deals": 0,
-   "errors": [
-    "ovoce-a-zelenina p1: HTTP 403",
-    "pecivo p1: HTTP 403",
-    "maso-drubez-a-ryby p1: HTTP 403",
-    "lahudky p1: HTTP 403"
-   ],
-   "at": null
+   "ok": true,
+   "deals": 624,
+   "errors": [],
+   "at": "2026-10-26T04:53:44.404Z"
   },
   "penny": {
-   "ok": false,
-   "deals": 0,
-   "errors": [
-    "ovoce-a-zelenina p1: HTTP 403",
-    "pecivo p1: HTTP 403",
-    "maso-drubez-a-ryby p1: HTTP 403",
-    "lahudky p1: HTTP 403"
-   ],
-   "at": null
+   "ok": true,
+   "deals": 1076,
+   "errors": [],
+   "at": "2026-10-26T04:53:44.404Z"
   },
   "billa": {
-   "ok": false,
-   "deals": 0,
-   "errors": [
-    "ovoce-a-zelenina p1: HTTP 403",
-    "pecivo p1: HTTP 403",
-    "maso-drubez-a-ryby p1: HTTP 403",
-    "lahudky p1: HTTP 403"
-   ],
-   "at": null
+   "ok": true,
+   "deals": 900,
+   "errors": [],
+   "at": "2026-10-26T04:53:44.404Z"
   }
  },
  "translate": {
   "method": "glossary",
   "added": 0,
-  "waiting": 5905,
+  "waiting": 5951,
   "error": null
  }
 }
