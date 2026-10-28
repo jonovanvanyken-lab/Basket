@@ -1,5 +1,5 @@
 {
- "runAt": "2026-10-27T04:51:12.676Z",
+ "runAt": "2026-10-28T04:59:47.736Z",
  "quick": false,
  "tesco": {
   "ok": true,
@@ -12,80 +12,50 @@
   ],
   "errors": [],
   "products": 2697,
-  "at": "2026-10-27T04:51:12.676Z"
+  "at": "2026-10-28T04:59:47.736Z"
  },
  "leaflets": {
   "tesco": {
-   "ok": false,
-   "deals": 0,
-   "errors": [
-    "ovoce-a-zelenina p1: HTTP 403",
-    "pecivo p1: HTTP 403",
-    "maso-drubez-a-ryby p1: HTTP 403",
-    "lahudky p1: HTTP 403"
-   ],
-   "at": null
+   "ok": true,
+   "deals": 320,
+   "errors": [],
+   "at": "2026-10-28T04:59:47.736Z"
   },
   "albert": {
-   "ok": false,
-   "deals": 0,
-   "errors": [
-    "ovoce-a-zelenina p1: HTTP 403",
-    "pecivo p1: HTTP 403",
-    "maso-drubez-a-ryby p1: HTTP 403",
-    "lahudky p1: HTTP 403"
-   ],
-   "at": null
+   "ok": true,
+   "deals": 1294,
+   "errors": [],
+   "at": "2026-10-28T04:59:47.736Z"
   },
   "lidl": {
-   "ok": false,
-   "deals": 0,
-   "errors": [
-    "ovoce-a-zelenina p1: HTTP 403",
-    "pecivo p1: HTTP 403",
-    "maso-drubez-a-ryby p1: HTTP 403",
-    "lahudky p1: HTTP 403"
-   ],
-   "at": null
+   "ok": true,
+   "deals": 247,
+   "errors": [],
+   "at": "2026-10-28T04:59:47.736Z"
   },
   "kaufland": {
-   "ok": false,
-   "deals": 0,
-   "errors": [
-    "ovoce-a-zelenina p1: HTTP 403",
-    "pecivo p1: HTTP 403",
-    "maso-drubez-a-ryby p1: HTTP 403",
-    "lahudky p1: HTTP 403"
-   ],
-   "at": null
+   "ok": true,
+   "deals": 608,
+   "errors": [],
+   "at": "2026-10-28T04:59:47.736Z"
   },
   "penny": {
-   "ok": false,
-   "deals": 0,
-   "errors": [
-    "ovoce-a-zelenina p1: HTTP 403",
-    "pecivo p1: HTTP 403",
-    "maso-drubez-a-ryby p1: HTTP 403",
-    "lahudky p1: HTTP 403"
-   ],
-   "at": null
+   "ok": true,
+   "deals": 594,
+   "errors": [],
+   "at": "2026-10-28T04:59:47.736Z"
   },
   "billa": {
-   "ok": false,
-   "deals": 0,
-   "errors": [
-    "ovoce-a-zelenina p1: HTTP 403",
-    "pecivo p1: HTTP 403",
-    "maso-drubez-a-ryby p1: HTTP 403",
-    "lahudky p1: HTTP 403"
-   ],
-   "at": null
+   "ok": true,
+   "deals": 634,
+   "errors": [],
+   "at": "2026-10-28T04:59:47.736Z"
   }
  },
  "translate": {
   "method": "glossary",
   "added": 0,
-  "waiting": 5934,
+  "waiting": 5379,
   "error": null
  }
 }
