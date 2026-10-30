@@ -1,5 +1,5 @@
 {
- "runAt": "2026-10-29T05:01:41.385Z",
+ "runAt": "2026-10-30T05:01:47.978Z",
  "quick": false,
  "tesco": {
   "ok": true,
@@ -11,51 +11,51 @@
    "using xapi"
   ],
   "errors": [],
-  "products": 2697,
-  "at": "2026-10-29T05:01:41.385Z"
+  "products": 2693,
+  "at": "2026-10-30T05:01:47.978Z"
  },
  "leaflets": {
   "tesco": {
    "ok": true,
    "deals": 619,
    "errors": [],
-   "at": "2026-10-29T05:01:41.385Z"
+   "at": "2026-10-30T05:01:47.978Z"
   },
   "albert": {
    "ok": true,
    "deals": 1306,
    "errors": [],
-   "at": "2026-10-29T05:01:41.385Z"
+   "at": "2026-10-30T05:01:47.978Z"
   },
   "lidl": {
    "ok": true,
-   "deals": 243,
+   "deals": 246,
    "errors": [],
-   "at": "2026-10-29T05:01:41.385Z"
+   "at": "2026-10-30T05:01:47.978Z"
   },
   "kaufland": {
    "ok": true,
-   "deals": 607,
+   "deals": 638,
    "errors": [],
-   "at": "2026-10-29T05:01:41.385Z"
+   "at": "2026-10-30T05:01:47.978Z"
   },
   "penny": {
    "ok": true,
    "deals": 593,
    "errors": [],
-   "at": "2026-10-29T05:01:41.385Z"
+   "at": "2026-10-30T05:01:47.978Z"
   },
   "billa": {
    "ok": true,
    "deals": 951,
    "errors": [],
-   "at": "2026-10-29T05:01:41.385Z"
+   "at": "2026-10-30T05:01:47.978Z"
   }
  },
  "translate": {
   "method": "glossary",
   "added": 0,
-  "waiting": 5733,
+  "waiting": 5758,
   "error": null
  }
 }
