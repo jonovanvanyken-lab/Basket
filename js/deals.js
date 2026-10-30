@@ -22,11 +22,31 @@ export const dealUnit = d => d.u || perUnit(d.p, d.pk);
 export const wasPrice = d => (d.d > 0 && d.d < 95 ? round2(d.p / (1 - d.d / 100)) : null);
 export const savingKc = d => { const w = wasPrice(d); return w ? round2(w - d.p) : 0; };
 
+/** Product name without its pack size, for matching ("Káva Jacobs Velvet, 200 g" → "kava jacobs velvet"). */
+export const baseName = name => norm(name).replace(/[,(]?\s*\d+(?:[.,]\d+)?\s*(?:x\s*\d+(?:[.,]\d+)?\s*)?(?:g|kg|ml|l|ks|dkg)\b.*$/, "").replace(/[,\s-]+$/, "").trim();
+const samePack = (a, b) => a && b && a.u === b.u && Math.abs(a.v - b.v) <= Math.max(1, b.v * 0.03) && (a.n || 1) === (b.n || 1);
+
+/** kupi.cz's usual price ("Běžná cena") for a deal, when it's for the same product and pack size. */
+export function usualLookup(usual) {
+  const byLink = new Map(), byName = new Map();
+  for (const u of Object.values(usual?.items || {})) {
+    if (!u?.p || !u.pk) continue;
+    if (u.l) byLink.set(u.l, u);
+    const k = baseName(u.n); if (k) (byName.get(k) || byName.set(k, []).get(k)).push(u);
+  }
+  return d => {
+    if (!d.pk) return null;
+    const cands = [byLink.get(d.l), ...(byName.get(baseName(d.n)) || [])].filter(Boolean);
+    return cands.find(u => samePack(u.pk, d.pk)) || null;
+  };
+}
+
 /**
  * Builds a cached analyser for one data load.
- * ctx: {index (from buildIndex), history, custom (custom items), today}
+ * ctx: {index (from buildIndex), history, usual (data/usual.json), custom (custom items), today}
  */
-export function analyser({ index, history, custom = [], today = iso() }) {
+export function analyser({ index, history, usual = null, custom = [], today = iso() }) {
+  const usualFor = usualLookup(usual);
   const itemCache = new Map(), everyday = new Map(), lows = new Map(), out = new Map();
   const itemFor = d => {
     const k = d.i ?? dealKey(d);
@@ -73,7 +93,9 @@ export function analyser({ index, history, custom = [], today = iso() }) {
     const k = d.i ?? dealKey(d);
     if (out.has(k)) return out.get(k);
     const it = itemFor(d), unit = dealUnit(d);
-    const r = { it, unit, was: wasPrice(d), saving: savingKc(d), real: null, lowest: false, stockUp: false,
+    const u = usualFor(d);
+    const usualR = u ? { p: u.p, pct: Math.round((1 - d.p / u.p) * 100), name: u.n } : null;
+    const r = { it, unit, usual: usualR, was: usualR ? u.p : wasPrice(d), saving: usualR ? Math.max(0, round2(u.p - d.p)) : savingKc(d), real: null, lowest: false, stockUp: false,
       isNew: !!(d.fs && daysBetween(d.fs, today) <= 2), upcoming: !!(d.from && d.from > today),
       endsSoon: !!(d.until && daysBetween(today, d.until) <= 1) };
     if (it && unit) {

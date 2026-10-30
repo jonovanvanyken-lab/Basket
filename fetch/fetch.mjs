@@ -16,12 +16,15 @@ import { readRecipeUrl } from "./recipe-url.mjs";
 import { updateHistory } from "./history.mjs";
 import { translateNames } from "./translate-job.mjs";
 import { runAlerts } from "./alerts.mjs";
+import { fetchUsual } from "./usual.mjs";
 import { dealKey } from "../js/deals.js";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const DATA = process.env.DATA_DIR || join(ROOT, "data");
 const env = process.env;
 const QUICK = env.QUICK === "1" || env.QUICK === "true";
+// ONLY=usual runs just the kupi.cz usual prices (a quick check, from the workflow's "only" option)
+const ONLY = (env.ONLY || "").trim().toLowerCase();
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const FAST = process.env.FAST === "1";
 const polite = (base = 1200) => () => (FAST ? Promise.resolve() : sleep(base + Math.random() * 800));
@@ -61,8 +64,8 @@ async function main() {
   // ---- Tesco ----
   const watch = await readJson("watch.json", { queries: [] });
   const extra = (env.QUERIES || "").split(/[;\n]/).map(s => s.trim()).filter(Boolean);
-  const base = QUICK ? [] : [...new Set(ITEMS.filter(x => !x.custom).map(x => x.q))];
-  const queries = [...new Set([...base, ...(QUICK ? [] : watch.queries || []), ...extra])].filter(q => q.length <= 60).slice(0, 400);
+  const base = QUICK || ONLY ? [] : [...new Set(ITEMS.filter(x => !x.custom).map(x => x.q))];
+  const queries = [...new Set([...base, ...(QUICK || ONLY ? [] : watch.queries || []), ...(ONLY ? [] : extra)])].filter(q => q.length <= 60).slice(0, 400);
   const prev = await readJson("tesco.json", { products: {}, queries: {} });
   const tesco = { fetchedAt: prev.fetchedAt || null, source: "nakup.itesco.cz", products: { ...prev.products }, queries: { ...prev.queries }, seen: { ...(prev.seen || {}) } };
   const t = new Tesco({ log });
@@ -88,12 +91,12 @@ async function main() {
     for (const id of Object.keys(tesco.products)) if (!live.has(id)) delete tesco.products[id];
     await save("tesco.json", tesco);
   }
-  status.tesco = { ok: ok > 0 || !queries.length, searched: ok, failed, method: t.method, notes: t.notes.slice(0, 6), errors: tErrors.slice(0, 8), products: Object.keys(tesco.products).length, at: ok ? runAt : status.tesco?.at || null };
-  log(`tesco: ${ok} searches ok, ${failed} failed, ${status.tesco.products} products (${t.method || "no method worked"})`);
+  if (queries.length || !status.tesco) status.tesco = { ok: ok > 0 || !queries.length, searched: ok, failed, method: t.method, notes: t.notes.slice(0, 6), errors: tErrors.slice(0, 8), products: Object.keys(tesco.products).length, at: ok ? runAt : status.tesco?.at || null };
+  if (queries.length) log(`tesco: ${ok} searches ok, ${failed} failed, ${status.tesco.products} products (${t.method || "no method worked"})`);
 
   // ---- leaflets ----
   let deals = await readJson("deals.json", { deals: [] });
-  if (!QUICK) {
+  if (!QUICK && !ONLY) {
     const stores = (env.STORES || Object.keys(SHOP_SLUGS).join(",")).split(",").map(s => s.trim()).filter(s => SHOP_SLUGS[s]);
     const all = []; status.leaflets = {};
     for (const s of stores) {
@@ -112,8 +115,17 @@ async function main() {
     await save("deals.json", deals);
   }
 
+  // ---- usual prices ("Běžná cena") from kupi.cz search, first page only ----
+  if ((!QUICK && !ONLY) || ONLY === "usual") {
+    const prevU = await readJson("usual.json", { items: {} });
+    const qs = [...new Set(ITEMS.map(x => x.q))];
+    const u = await fetchUsual(qs, { log, delay: polite(1100), prev: prevU, today: runAt.slice(0, 10) });
+    if (u.ok) await save("usual.json", { fetchedAt: runAt, source: "kupi.cz", items: u.items });
+    status.usual = { ok: u.ok > 0 && u.found > 0, searched: u.ok, failed: u.failed, found: u.found, products: Object.keys(u.items).length, errors: u.errors, at: u.ok ? runAt : status.usual?.at || null };
+  }
+
   // ---- English names (DeepL, when a key is set up) ----
-  if (!QUICK || extra.length) {
+  if (!ONLY && (!QUICK || extra.length)) {
     const cache = await readJson("translations.json", {});
     // most useful first: Tesco products, then the Tesco, Albert and Lidl leaflets, then the rest
     const main = new Set(["tesco", "albert", "lidl"]);
@@ -123,13 +135,13 @@ async function main() {
   }
 
   // ---- history ----
-  if (!QUICK) {
+  if (!QUICK && !ONLY) {
     const hist = await readJson("history.json", { items: {}, tesco: {} });
     updateHistory(hist, tesco, deals, runAt.slice(0, 10));
     await save("history.json", hist);
   }
   // ---- sale alerts (push notifications) ----
-  if ((!QUICK || env.TEST_PUSH === "true" || env.TEST_PUSH === "1") && env.PUSH_CONFIG) {
+  if (((!QUICK && !ONLY) || env.TEST_PUSH === "true" || env.TEST_PUSH === "1") && env.PUSH_CONFIG) {
     const hist = await readJson("history.json", { items: {} });
     const sent = await readJson("alerts-sent.json", {});
     status.push = await runAlerts({ configText: env.PUSH_CONFIG, alerts: await readJson("alerts.json", null), sent, tesco, deals, history: hist,
@@ -138,7 +150,7 @@ async function main() {
   } else if (env.TEST_PUSH === "true") status.push = { ok: false, at: runAt, error: "The PUSH_CONFIG secret isn't set up in the repository yet." };
 
   await writeFile(join(DATA, "status.json"), JSON.stringify(status, null, 1) + "\n");
-  if (!QUICK && !status.tesco.ok && !Object.values(status.leaflets || {}).some(x => x.ok)) { log("nothing could be fetched"); process.exitCode = 1; }
+  if (!QUICK && !ONLY && !status.tesco?.ok && !Object.values(status.leaflets || {}).some(x => x.ok)) { log("nothing could be fetched"); process.exitCode = 1; }
 }
 
 main().catch(e => { console.error(e); process.exit(1); });

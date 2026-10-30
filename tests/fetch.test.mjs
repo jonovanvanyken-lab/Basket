@@ -73,6 +73,9 @@ test("whole fetch job against a fake network", async () => {
   assert.equal(tr["Rajčata cherry"], "EN Rajčata cherry");
   assert.equal(tr["Tesco Máslo 82% tuku 250g"], "EN Tesco Máslo 82% tuku 250g");
   assert.equal(status.translate.method, "deepl"); assert.ok(status.translate.added > 5);
+  const usual = JSON.parse(await readFile(join(dir, "usual.json"), "utf8"));
+  assert.equal(usual.items["/sleva/instantni-kava-jacobs-velvet"].p, 235.38);
+  assert.ok(status.usual.ok && status.usual.found >= 3 && status.usual.searched > 150, JSON.stringify(status.usual));
 });
 
 import { runAlerts } from "../fetch/alerts.mjs";
@@ -97,4 +100,29 @@ test("sale alerts are sent once per deal", async () => {
   assert.equal(t.sent, 1); assert.match(got[1].payload.body, /working/);
   const bad = await runAlerts({ configText: "nope", alerts, sent: {}, tesco, deals, history: {}, today: "2026-10-16", send });
   assert.equal(bad.ok, false);
+});
+
+import { parseUsual } from "../fetch/usual.mjs";
+import { analyser as mkAnalyser, usualLookup } from "../js/deals.js";
+import { buildIndex as bIdx } from "../js/plan.js";
+test("kupi.cz usual prices", async () => {
+  const cards = parseUsual(await fx("kupi-search.html"));
+  const by = Object.fromEntries(cards.map(c => [c.l, c]));
+  assert.equal(cards.length, 3, JSON.stringify(cards)); // the 0,00 Kč one is skipped
+  assert.deepEqual([by["/sleva/instantni-kava-jacobs-velvet"].p, by["/sleva/instantni-kava-jacobs-velvet"].pk], [235.38, { v: 200, u: "g" }]);
+  assert.equal(by["/sleva/mleta-kava-standard-jihlavanka"].pk, null, "several sizes: the usual price's size is unknown");
+  assert.deepEqual(by["/sleva/mleta-kava-jacobs-aroma-standard"].pk, { v: 250, u: "g" }, "all offers share one size");
+  const usual = { items: Object.fromEntries(cards.map(c => [c.k, c])) };
+  const deals = { deals: [
+    { s: "albert", n: "Instantní káva Jacobs Velvet", p: 129.9, pk: { v: 200, u: "g" }, d: 43, l: "/sleva/instantni-kava-jacobs-velvet" },
+    { s: "albert", n: "Mletá káva Standard Jihlavanka", p: 189, pk: { v: 1000, u: "g" }, d: 52 },
+    { s: "lidl", n: "Mletá káva Jacobs Aroma Standard", p: 159.9, pk: { v: 250, u: "g" } }, // matched by name, dearer than usual
+    { s: "lidl", n: "Instantní káva Jacobs Velvet", p: 99.9, pk: { v: 100, u: "g" }, l: "/sleva/instantni-kava-jacobs-velvet" }, // other size
+  ] };
+  const an = mkAnalyser({ index: bIdx(null, deals), usual, today: "2026-10-30" });
+  const [velvet, jihl, aroma, small] = bIdx(null, deals).deals.map(an);
+  assert.deepEqual([velvet.usual.p, velvet.usual.pct, velvet.saving], [235.38, 45, 105.48]);
+  assert.equal(jihl.usual, null); assert.equal(small.usual, null);
+  assert.equal(aroma.usual.pct, -10);
+  assert.equal(usualLookup(usual)({ n: "x", pk: null }), null);
 });

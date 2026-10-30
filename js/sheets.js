@@ -421,7 +421,7 @@ export function openSettings() {
     <div><h3>Appearance</h3><div class="seg">${["auto", "light", "dark"].map(t => `<button type="button" data-act="theme" data-v="${t}" aria-pressed="${st.theme === t}">${t[0].toUpperCase() + t.slice(1)}</button>`).join("")}</div></div>
     <div><h3>Backup</h3><p class="hint">Your list, recipes, price book and shops, as one file.</p><div class="btnrow"><button class="ghost" type="button" data-act="backup">Save a backup</button><label class="ghost" style="cursor:pointer;text-align:center">Restore<input type="file" accept="application/json,.json" data-change="restore" hidden></label></div></div>
     <div><h3>Start again</h3><button class="danger" type="button" data-act="resetAll">Delete everything on this device</button></div>
-    <p class="fine">Kč Basket · version 3. Prices: Tesco from nakup.itesco.cz, leaflet deals from kupi.cz, read once a day.</p>`);
+    <p class="fine">Kč Basket · version 4. Prices: Tesco from nakup.itesco.cz, leaflet deals from kupi.cz, read once a day.</p>`);
 }
 onChange("storeOn", el => { S().settings.stores[el.dataset.store] = el.checked; DATA.index.cache.clear(); changed(); openSettings(); });
 onChange("photos", el => { S().settings.photos = el.checked; changed(); });
@@ -467,6 +467,7 @@ export function openStatus() {
   openSheet("Price data", `<div class="status-list">
     ${line(storeTag("tesco") + " online", st.tesco, x => `${x.products} products, ${x.searched} searches, ${ago(x.at)}${x.method ? ` (${x.method})` : ""}`)}
     ${leaf.map(([s, x]) => line(storeTag(s) + " leaflet", x, y => `${y.deals} deals, ${ago(y.at)}`)).join("")}
+    ${st.usual ? line("Usual prices <span class=\"muted small\">kupi.cz</span>", st.usual, y => `${y.products} products, ${ago(y.at)}`) : ""}
     ${st.runAt ? `<p class="fine">Last run ${esc(new Date(st.runAt).toLocaleString("en-GB"))}${st.quick ? " (quick)" : ""}.</p>` : `<p class="hint">The daily run hasn't happened yet. On GitHub, open the repository's Actions tab, choose Prices, and press Run workflow once.</p>`}
     ${st.tesco?.errors?.length ? `<details><summary class="small muted">Tesco messages</summary><code>${st.tesco.errors.map(esc).join("<br>")}</code></details>` : ""}
     ${st.tesco?.notes?.length ? `<p class="fine">${esc(st.tesco.notes.join(" · "))}</p>` : ""}</div>
@@ -488,7 +489,7 @@ on("fetchNow", async () => {
     const run = await c.waitForRun(since, say);
     if (run.conclusion !== "success") throw new Error("The price run failed on GitHub. Open the Actions tab there to see why.");
     say("Reading the new prices…");
-    for (const n of ["tesco", "deals", "history", "status"]) { try { const t = await c.readRaw(`data/${n}.json`); await putFresh(n, t); } catch {} }
+    for (const n of ["tesco", "deals", "history", "status", "usual"]) { try { const t = await c.readRaw(`data/${n}.json`); await putFresh(n, t); } catch {} }
     await loadData();
     setBanner(""); toast("Prices updated");
     if (!$("sheet").hidden && $("fnMsg")) openStatus();

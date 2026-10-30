@@ -12,6 +12,10 @@ globalThis.fetch = async (url, opts = {}) => {
     const q = u.searchParams.get("query") || "";
     return reply(/m[aá]slo|banán|banan/i.test(q) ? page("tesco-tiles.html") : page("tesco-json.html"));
   }
+  if (u.host === "www.kupi.cz" && u.pathname === "/hledej") {
+    if (u.searchParams.get("page")) throw new Error("search page 2+ must not be loaded");
+    return reply(/k[aá]v/i.test(u.searchParams.get("f") || "") ? page("kupi-search.html") : empty);
+  }
   if (u.host === "www.kupi.cz") {
     if (u.searchParams.get("page")) return reply(page("kupi-lidl.html"), 200, u.origin + u.pathname); // redirect back to page 1 = no more pages
     if (/\/(ovoce-a-zelenina|nealko-napoje)\//.test(u.pathname)) return reply(page("kupi-lidl.html"));

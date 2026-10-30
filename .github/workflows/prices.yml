@@ -24,6 +24,10 @@ on:
         description: "Send a test sale alert to your phone"
         required: false
         default: "false"
+      only:
+        description: "Run just one part (usual = kupi.cz usual prices)"
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -35,7 +39,7 @@ concurrency:
 jobs:
   fetch:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 55
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -52,6 +56,7 @@ jobs:
           DEEPL_KEY: ${{ secrets.DEEPL_KEY }}
           PUSH_CONFIG: ${{ secrets.PUSH_CONFIG }}
           TEST_PUSH: ${{ inputs.test_push }}
+          ONLY: ${{ inputs.only }}
         run: node fetch/fetch.mjs
       - name: Save
         if: always()

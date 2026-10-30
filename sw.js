@@ -1,9 +1,9 @@
 // Offline support. The app's code and the price data are fetched fresh when online (network first) and
 // kept for offline use, so the shopping checklist works in a store with no signal.
 // Text recognition and icons are cache first.
-const VERSION = "kc-basket-v3";
+const VERSION = "kc-basket-v4";
 const IMG = "kcb-img";
-const SHELL = ["./", "index.html", "app.css?v=3", "js/app.js?v=3", "js/state.js", "js/core.js", "js/ui.js", "js/views.js", "js/sheets.js", "js/plan.js",
+const SHELL = ["./", "index.html", "app.css?v=4", "js/app.js?v=4", "js/state.js", "js/core.js", "js/ui.js", "js/views.js", "js/sheets.js", "js/plan.js",
   "js/units.js", "js/dict.js", "js/match.js", "js/recipe.js", "js/receipt.js", "js/gh.js", "js/translate.js", "js/deals.js", "js/dealsview.js", "js/alerts-ui.js", "manifest.webmanifest"];
 const STATIC = ["icons/icon-192.png", "icons/icon-512.png", "icons/maskable-512.png", "icons/apple-touch-icon.png"];
 

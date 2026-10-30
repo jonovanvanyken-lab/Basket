@@ -65,5 +65,12 @@ updateHistory(hist, older, { deals: [] }, d(-40));
 updateHistory(hist, tesco, deals, d(0));
 const status = { runAt: new Date().toISOString(), tesco: { ok: true, searched: 170, failed: 0, method: "html", products: Object.keys(products).length, at: new Date().toISOString(), notes: ["using html"], errors: [] },
   leaflets: { lidl: { ok: true, deals: 8, at: new Date().toISOString() }, albert: { ok: true, deals: 7, at: new Date().toISOString() } } };
-for (const [n, j] of Object.entries({ tesco, deals, history: hist, status })) writeFileSync(join(dir, "data", n + ".json"), JSON.stringify(j));
+const usual = { fetchedAt: new Date().toISOString(), items: {
+  a: { n: "Káva mletá Jacobs Krönung, 250 g", p: 159.9, pk: { v: 250, u: "g" }, at: d(0) },
+  b: { n: "Olivový olej extra panenský", p: 249.9, pk: { v: 750, u: "ml" }, at: d(0) },
+  c: { n: "Nutella", p: 129.9, pk: { v: 600, u: "g" }, at: d(0) },
+  e: { n: "Instantní káva Jacobs Velvet", p: 119.9, pk: { v: 180, u: "g" }, at: d(0) },
+} };
+status.usual = { ok: true, searched: 190, failed: 0, found: 2400, products: 1850, at: new Date().toISOString() };
+for (const [n, j] of Object.entries({ tesco, deals, history: hist, status, usual })) writeFileSync(join(dir, "data", n + ".json"), JSON.stringify(j));
 console.log("sample written");

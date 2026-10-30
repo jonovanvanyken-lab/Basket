@@ -21,7 +21,7 @@ export function setDealFilter(k, v) { if (k === "q") { S().dealPrefs.q = v; limi
 // one analyser per data load
 let anState = null;
 function A() {
-  if (!anState || anState.index !== DATA.index || anState.n !== S().custom.length || anState.day !== iso()) anState = { index: DATA.index, n: S().custom.length, day: iso(), fn: analyser({ index: DATA.index, history: DATA.history, custom: S().custom, today: iso() }) };
+  if (!anState || anState.index !== DATA.index || anState.n !== S().custom.length || anState.day !== iso()) anState = { index: DATA.index, n: S().custom.length, day: iso(), fn: analyser({ index: DATA.index, history: DATA.history, usual: DATA.usual, custom: S().custom, today: iso() }) };
   return anState.fn;
 }
 const today = () => iso();
@@ -71,6 +71,7 @@ function pillsFor(d, r, word) {
   if (r.upcoming) out.push(`<span class="pill">From ${esc(dayLabel(d.from))}</span>`);
   if (d.d) out.push(`<span class="pill deal">−${d.d} %</span>`);
   if (d.app) out.push(`<span class="pill card">${esc(LOYALTY[d.s])}</span>`);
+  if (r.usual && r.usual.pct < 0) out.push(`<span class="pill warn">Above usual price</span>`);
   if (r.stockUp) out.push(`<span class="pill ok">Stock up</span>`);
   else if (r.lowest) out.push(`<span class="pill ok">Lowest in 8 weeks</span>`);
   if (r.real && r.real.pct <= -5 && d.s !== "tesco") out.push(`<span class="pill warn">Tesco online cheaper</span>`);
@@ -84,7 +85,7 @@ export function dealRow(d, r = A()(d), word = null) {
     <button class="rowbtn" type="button" data-act="openDeal" data-i="${d.i}"><span class="nm">${pname(d.n)}</span>
       <span class="meta">${storeTag(d.s)}${fmtName(d) ? `<span>${esc(fmtName(d))}</span>` : ""}${d.a ? `<span>${esc(d.a)}</span>` : ""}${d.until ? `<span>until ${esc(dayLabel(d.until))}</span>` : ""}</span>
       <span class="meta">${pillsFor(d, r, word)}</span></button>
-    <div class="px">${kc(d.p)}<small>${r.unit ? esc(kcPer(r.unit)) : ""}${r.saving >= 1 ? `<br><span class="save">save ${esc(kc(r.saving, true))}</span>` : ""}</small></div>
+    <div class="px">${kc(d.p)}<small>${r.unit ? esc(kcPer(r.unit)) : ""}${r.usual ? `<br>usual ${esc(kc(r.usual.p))}` : ""}${r.saving >= 1 ? `<br><span class="save">save ${esc(kc(r.saving, true))}</span>` : ""}</small></div>
     <div class="add">${it ? `<button class="link" type="button" data-act="addItem" data-id="${esc(it.id)}">+ Add ${esc(it.name.toLowerCase())}</button>` : `<button class="link" type="button" data-act="addDealName" data-name="${esc(d.n)}">+ Add to list</button>`}</div></div>`;
 }
 function tescoRow({ p, it, word, until }) {
@@ -116,7 +117,7 @@ function filtered() {
     if (p.timing === "now" && r.upcoming) continue;
     if (p.timing === "soon" && !(r.endsSoon && !r.upcoming)) continue;
     if (p.timing === "later" && !r.upcoming) continue;
-    if (p.realOnly && r.real && r.real.pct < 0) continue;
+    if (p.realOnly && ((r.real && r.real.pct < 0) || (r.usual && r.usual.pct < 0))) continue;
     if (p.stockOnly && !r.stockUp) continue;
     if (p.newOnly && !r.isNew) continue;
     if (q && !norm(d.n).includes(q) && !norm(en(d.n)).includes(q)) continue;
@@ -162,7 +163,7 @@ function renderAll() {
       <div><span class="label">Discount</span>${seg("minDisc", [[0, "Any"], [20, "20 %+"], [30, "30 %+"], [50, "50 %+"]])}</div>
       <div><span class="label">Card and app deals</span>${seg("card", [["include", "Include"], ["hide", "Hide"], ["only", "Only these"]])}</div>
       <div><span class="label">When</span>${seg("timing", [["all", "All"], ["now", "On now"], ["soon", "Ending soon"], ["later", "Starting later"]])}</div>
-      <label class="check"><input type="checkbox" data-change="dpCheck" data-k="realOnly" ${p.realOnly ? "checked" : ""}> Hide deals that cost more than Tesco online</label>
+      <label class="check"><input type="checkbox" data-change="dpCheck" data-k="realOnly" ${p.realOnly ? "checked" : ""}> Hide deals that aren't a real saving (dearer than Tesco online or the usual price)</label>
       <label class="check"><input type="checkbox" data-change="dpCheck" data-k="stockOnly" ${p.stockOnly ? "checked" : ""}> Stock-up deals only (long-life, lowest in 8 weeks)</label>
       <label class="check"><input type="checkbox" data-change="dpCheck" data-k="newOnly" ${p.newOnly ? "checked" : ""}> New in the last two days</label>
       <div><span class="label">Hide these categories everywhere</span><div class="chips" style="margin-top:6px">${DEAL_CATS.map(([k, l]) => `<button class="chip${hidden.has(k) ? " on" : ""}" type="button" data-act="hideCat" data-v="${k}" aria-pressed="${hidden.has(k)}">${hidden.has(k) ? "Hidden: " : ""}${esc(l)}</button>`).join("")}</div></div>
@@ -181,7 +182,7 @@ function renderAll() {
     html += list.slice(0, limit).map(x => dealRow(x.d, x.r)).join("");
     if (list.length > limit) html += `<div class="btnrow"><button class="ghost" type="button" data-act="moreDeals">Show more</button></div>`;
   }
-  html += `<p class="fine">${DATA.deals?.fetchedAt ? `Leaflets read ${esc(ago(DATA.deals.fetchedAt))} from kupi.cz. ` : ""}"Under Tesco" compares with Tesco online's cheapest everyday price for the same item.</p></section>`;
+  html += `<p class="fine">${DATA.deals?.fetchedAt ? `Leaflets read ${esc(ago(DATA.deals.fetchedAt))} from kupi.cz. ` : ""}"Usual" is kupi.cz's usual price for the same product and size. "Under Tesco" compares with Tesco online's cheapest everyday price for the same item.</p></section>`;
   return html;
 }
 
@@ -252,10 +253,12 @@ export function openDeal(i) {
   let html = `<div class="row" style="align-items:flex-start">${thumb({ it, cat: d.c, big: true })}<div class="grow"><div class="nm" style="font-weight:700;font-size:17px">${pname(d.n)}</div>
       <div class="meta small" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">${storeTag(d.s)}${fmtName(d) ? `<span class="muted">${esc(fmtName(d))}</span>` : ""}<span class="muted">${esc(DEAL_CAT_NAME[d.kc] || "")}</span></div></div></div>
     <div class="summary" style="grid-template-columns:repeat(2,minmax(0,1fr))"><div class="kpi"><span class="label">Price</span><span class="big">${kc(d.p)}</span><span class="sub">${esc(d.a || "")}${r.unit ? ` · ${esc(kcPer(r.unit))}` : ""}</span></div>
-      <div class="kpi"><span class="label">${d.d ? `${d.d} % off` : "Offer"}</span><span class="big">${r.saving >= 1 ? `−${kc(r.saving, true)}` : "–"}</span><span class="sub">${r.was ? `was about ${esc(kc(r.was))}` : "no discount given"}</span></div></div>
+      ${r.usual ? `<div class="kpi"><span class="label">${r.usual.pct >= 0 ? `${r.usual.pct} % below usual` : `${-r.usual.pct} % above usual`}</span><span class="big">${r.usual.pct >= 0 ? `−${kc(r.saving, true)}` : `+${kc(d.p - r.usual.p, true)}`}</span><span class="sub">usual price ${esc(kc(r.usual.p))}</span></div>`
+        : `<div class="kpi"><span class="label">${d.d ? `${d.d} % off` : "Offer"}</span><span class="big">${r.saving >= 1 ? `−${kc(r.saving, true)}` : "–"}</span><span class="sub">${r.was ? `was about ${esc(kc(r.was))}` : "no discount given"}</span></div>`}</div>
     <p class="small">Valid ${esc(valid)}${d.app ? ` · needs ${esc(LOYALTY[d.s])}` : ""}${r.isNew ? ` · <span class="pill new">New</span>` : ""}</p>`;
   // verdict
   const lines = [];
+  if (r.usual) lines.push(r.usual.pct >= 0 ? `kupi.cz lists the usual price for this product and size as <b>${esc(kc(r.usual.p))}</b>, so this offer is ${r.usual.pct} % below it${d.d && Math.abs(d.d - r.usual.pct) >= 8 ? ` (the leaflet says −${d.d} %)` : ""}.` : `<b>Not a real deal:</b> it costs more than kupi.cz's usual price of ${esc(kc(r.usual.p))}.`);
   if (r.real && d.s !== "tesco") {
     if (r.real.pct >= 0) lines.push(`<b>${r.real.pct} % cheaper</b> than Tesco online's cheapest everyday ${esc((it?.name || "price").toLowerCase())} (${esc(kcPer(r.real.unit))}, ${esc(en(r.real.name))}).`);
     else lines.push(`<b>Tesco online is ${-r.real.pct} % cheaper</b> with ${esc(en(r.real.name))} at ${esc(kcPer(r.real.unit))}, so this offer isn't a real saving unless you want this brand.`);
