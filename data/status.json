@@ -1,5 +1,5 @@
 {
- "runAt": "2026-10-30T08:07:56.238Z",
+ "runAt": "2026-10-30T08:29:51.774Z",
  "quick": false,
  "tesco": {
   "ok": true,
@@ -57,5 +57,20 @@
   "added": 0,
   "waiting": 5776,
   "error": null
+ },
+ "usual": {
+  "ok": false,
+  "searched": 0,
+  "failed": 6,
+  "found": 0,
+  "products": 0,
+  "errors": [
+   "cibule: HTTP 403",
+   "červená cibule: HTTP 403",
+   "jarní cibulka: HTTP 403",
+   "česnek: HTTP 403",
+   "zázvor: HTTP 403"
+  ],
+  "at": null
  }
 }
