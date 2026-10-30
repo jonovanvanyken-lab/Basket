@@ -50,8 +50,14 @@ const D = [
   ["albert", "Albert", "Vejce M", 49.9, "10 ks", 20, null, "mlecne-vyrobky-a-vejce", "dairy"],
   ["albert", "Albert", "Cibule žlutá", 19.9, "1 kg", 20, null, "ovoce-a-zelenina", "produce"],
   ["albert", "Albert", "Hovězí mleté maso", 119.9, "0.5 kg", 20, null, "maso-drubez-a-ryby", "meat"],
+  ["lidl", "Lidl", "Káva mletá Jacobs Krönung", 89.9, "250 g", 31, null, "nealko-napoje", "drinks"],
+  ["albert", "Albert hypermarket", "Toaletní papír 3vrstvý", 79.9, "8 ks", 33, null, "drogerie", "household"],
+  ["lidl", "Lidl", "Nutella", 99.9, "600 g", 25, null, "sladkosti-a-slane-snacky", "snacks"],
+  ["albert", "Albert", "Pivo Pilsner Urquell", 26.9, "0.5 l", 18, true, "alkohol", "drinks"],
+  ["lidl", "Lidl", "Olivový olej extra panenský", 149.9, "750 ml", 40, null, "vareni-a-peceni", "pantry"],
+  ["albert", "Albert supermarket", "Rajčata keříková", 39.9, "500 g", 0, null, "ovoce-a-zelenina", "produce"],
 ];
-const deals = { fetchedAt: new Date().toISOString(), source: "sample", deals: D.map(([s, f, n, p, a, disc, app, kc, c]) => { const pk = parsePack(a); return { s, f, n, p, a, pk, u: perUnit(p, pk), ...(disc ? { d: disc } : {}), ...(app ? { app: true } : {}), until: d(3), c, kc }; }) };
+const deals = { fetchedAt: new Date().toISOString(), source: "sample", deals: D.map(([s, f, n, p, a, disc, app, kc, c]) => { const pk = parsePack(a); return { s, f, n, p, a, pk, u: perUnit(p, pk), ...(disc ? { d: disc } : {}), ...(app ? { app: true } : {}), until: n.startsWith("Ban") ? d(1) : d(3), ...(n.startsWith("Pivo P") ? { from: d(2), until: d(8) } : {}), c, kc, fs: n.length % 2 ? d(0) : d(-5), l: "/sleva/sample" }; }) };
 // history: pretend the last 6 weeks had higher butter prices at Tesco
 const hist = { items: {}, tesco: {} };
 const older = JSON.parse(JSON.stringify(tesco)); for (const p of Object.values(older.products)) { p.p = Math.round(p.p * 1.12 * 10) / 10; if (p.u) p.u = Math.round(p.u * 1.12 * 10) / 10; }

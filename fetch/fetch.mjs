@@ -15,6 +15,8 @@ import { fetchShop, SHOP_SLUGS } from "./kupi.mjs";
 import { readRecipeUrl } from "./recipe-url.mjs";
 import { updateHistory } from "./history.mjs";
 import { translateNames } from "./translate-job.mjs";
+import { runAlerts } from "./alerts.mjs";
+import { dealKey } from "../js/deals.js";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const DATA = process.env.DATA_DIR || join(ROOT, "data");
@@ -101,6 +103,11 @@ async function main() {
       else all.push(...(deals.deals || []).filter(x => x.s === s && (!x.until || x.until >= runAt.slice(0, 10)))); // keep last good set
       status.leaflets[s] = { ok: d.length > 0, deals: d.length, errors: errors.slice(0, 4), at: d.length ? runAt : status.leaflets?.[s]?.at || null };
     }
+    // when each deal first appeared, for the "New" badge
+    // (deals saved before this was tracked count as old, so they don't all show as new at once)
+    const tracked = (deals.deals || []).some(d => d.fs);
+    const seenBefore = new Map((deals.deals || []).map(d => [dealKey(d), d.fs || (tracked ? (deals.fetchedAt || runAt).slice(0, 10) : "2000-01-01")]));
+    for (const d of all) d.fs = seenBefore.get(dealKey(d)) || runAt.slice(0, 10);
     deals = { fetchedAt: runAt, source: "kupi.cz", deals: all };
     await save("deals.json", deals);
   }
@@ -121,6 +128,15 @@ async function main() {
     updateHistory(hist, tesco, deals, runAt.slice(0, 10));
     await save("history.json", hist);
   }
+  // ---- sale alerts (push notifications) ----
+  if ((!QUICK || env.TEST_PUSH === "true" || env.TEST_PUSH === "1") && env.PUSH_CONFIG) {
+    const hist = await readJson("history.json", { items: {} });
+    const sent = await readJson("alerts-sent.json", {});
+    status.push = await runAlerts({ configText: env.PUSH_CONFIG, alerts: await readJson("alerts.json", null), sent, tesco, deals, history: hist,
+      today: runAt.slice(0, 10), test: env.TEST_PUSH === "true" || env.TEST_PUSH === "1", log });
+    await writeFile(join(DATA, "alerts-sent.json"), JSON.stringify(sent) + "\n");
+  } else if (env.TEST_PUSH === "true") status.push = { ok: false, at: runAt, error: "The PUSH_CONFIG secret isn't set up in the repository yet." };
+
   await writeFile(join(DATA, "status.json"), JSON.stringify(status, null, 1) + "\n");
   if (!QUICK && !status.tesco.ok && !Object.values(status.leaflets || {}).some(x => x.ok)) { log("nothing could be fetched"); process.exitCode = 1; }
 }

@@ -23,6 +23,16 @@ export function defaults() {
       gh: { owner: "", repo: "", token: "", branch: "" },
     },
     seenWelcome: false,
+    // deals
+    dealPrefs: { stores: [], cats: [], sort: "disc", minDisc: 0, card: "include", timing: "all", realOnly: false, stockOnly: false, newOnly: false, group: false, q: "" },
+    hiddenCats: [],
+    watchWords: [],
+    seenDeals: [],
+    // sale alerts
+    alerts: {},          // itemId → {maxUnit?: Kč per kg / l / piece}
+    alertStaples: true,  // also alert on staples
+    alertMinDisc: 0,
+    push: { on: false, publicKey: "", privateKey: "", endpoint: "", synced: "", syncError: "" },
   };
 }
 
@@ -31,7 +41,7 @@ export function load() {
   let raw = null;
   try { raw = JSON.parse(localStorage.getItem(KEY) || "null"); } catch { raw = null; }
   const d = defaults();
-  state = raw && raw.v === 1 ? { ...d, ...raw, settings: { ...d.settings, ...(raw.settings || {}), stores: { ...d.settings.stores, ...(raw.settings?.stores || {}) }, loyalty: { ...d.settings.loyalty, ...(raw.settings?.loyalty || {}) }, gh: { ...d.settings.gh, ...(raw.settings?.gh || {}) } } } : d;
+  state = raw && raw.v === 1 ? { ...d, ...raw, dealPrefs: { ...d.dealPrefs, ...(raw.dealPrefs || {}) }, push: { ...d.push, ...(raw.push || {}) }, settings: { ...d.settings, ...(raw.settings || {}), stores: { ...d.settings.stores, ...(raw.settings?.stores || {}) }, loyalty: { ...d.settings.loyalty, ...(raw.settings?.loyalty || {}) }, gh: { ...d.settings.gh, ...(raw.settings?.gh || {}) } } } : d;
   return state;
 }
 export const S = () => state;
@@ -49,6 +59,7 @@ export const saveWorked = () => saveOk;
 export function exportBackup() {
   const copy = JSON.parse(JSON.stringify(state));
   copy.settings.gh.token = "";
+  copy.push = { ...copy.push, privateKey: "" };
   return JSON.stringify({ app: "kc-basket", exported: new Date().toISOString(), state: copy }, null, 1);
 }
 export function importBackup(text) {

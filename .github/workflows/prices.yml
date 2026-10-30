@@ -1,4 +1,3 @@
-# Copy of .github/workflows/prices.yml, for adding the price job by hand (see README).
 name: Prices
 
 # Every morning: Tesco online prices for every dictionary item and your extra searches,
@@ -19,6 +18,10 @@ on:
         default: ""
       quick:
         description: "Only the extra searches and recipe (skip the full run)"
+        required: false
+        default: "false"
+      test_push:
+        description: "Send a test sale alert to your phone"
         required: false
         default: "false"
 
@@ -46,6 +49,9 @@ jobs:
           RECIPE_URL: ${{ inputs.recipe_url }}
           QUICK: ${{ inputs.quick }}
           TESCO_API_KEY: ${{ secrets.TESCO_API_KEY }}
+          DEEPL_KEY: ${{ secrets.DEEPL_KEY }}
+          PUSH_CONFIG: ${{ secrets.PUSH_CONFIG }}
+          TEST_PUSH: ${{ inputs.test_push }}
         run: node fetch/fetch.mjs
       - name: Save
         if: always()

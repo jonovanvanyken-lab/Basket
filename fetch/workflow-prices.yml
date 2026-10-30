@@ -21,6 +21,10 @@ on:
         description: "Only the extra searches and recipe (skip the full run)"
         required: false
         default: "false"
+      test_push:
+        description: "Send a test sale alert to your phone"
+        required: false
+        default: "false"
 
 permissions:
   contents: write
@@ -47,6 +51,8 @@ jobs:
           QUICK: ${{ inputs.quick }}
           TESCO_API_KEY: ${{ secrets.TESCO_API_KEY }}
           DEEPL_KEY: ${{ secrets.DEEPL_KEY }}
+          PUSH_CONFIG: ${{ secrets.PUSH_CONFIG }}
+          TEST_PUSH: ${{ inputs.test_push }}
         run: node fetch/fetch.mjs
       - name: Save
         if: always()

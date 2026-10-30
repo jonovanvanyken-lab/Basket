@@ -26,8 +26,8 @@ function shownQty(q) { if (!q) return ["", ""]; if (q.u === "g" && q.v >= 1000) 
 
 // ================= item detail =================
 let cur = null; // {kind:"entry"|"item", id, open:store|null}
-export function openEntry(id) { cur = { kind: "entry", id, open: null }; openSheet("", "", { onClose: () => { cur = null; } }); renderItemSheet(); }
-export function openItem(itemId) { const e = S().list.find(x => x.itemId === itemId); if (e) return openEntry(e.id); cur = { kind: "item", id: itemId, open: null }; openSheet("", "", { onClose: () => { cur = null; } }); renderItemSheet(); }
+export function openEntry(id) { openSheet("", "", { onClose: () => { cur = null; } }); cur = { kind: "entry", id, open: null }; renderItemSheet(); }
+export function openItem(itemId) { const e = S().list.find(x => x.itemId === itemId); if (e) return openEntry(e.id); openSheet("", "", { onClose: () => { cur = null; } }); cur = { kind: "item", id: itemId, open: null }; renderItemSheet(); }
 function curEntry() { return cur?.kind === "entry" ? S().list.find(e => e.id === cur.id) : null; }
 export function renderItemSheet() {
   if (!cur) return;
@@ -76,7 +76,9 @@ export function renderItemSheet() {
   html += `<div><h3>Lowest price over time <span class="muted small">(Kč/${per})</span></h3>${lineChart(series, { unit: per, points: pts })}</div>`;
   const isStaple = S().staples.includes(it.id), isPantry = S().pantry.includes(it.id);
   html += `<div class="stack"><label class="check"><input type="checkbox" data-change="staple" data-id="${esc(it.id)}" ${isStaple ? "checked" : ""}> One of my staples</label>
-    <label class="check"><input type="checkbox" data-change="pantry" data-id="${esc(it.id)}" ${isPantry ? "checked" : ""}> Usually at home (left off recipe lists)</label></div>
+    <label class="check"><input type="checkbox" data-change="pantry" data-id="${esc(it.id)}" ${isPantry ? "checked" : ""}> Usually at home (left off recipe lists)</label>
+    <label class="check"><input type="checkbox" data-change="alertItem" data-id="${esc(it.id)}" ${S().alerts?.[it.id] ? "checked" : ""}> Tell me when it's on offer</label>
+    ${S().alerts?.[it.id] ? `<form class="row" data-submit="alertTarget" data-id="${esc(it.id)}" style="align-items:flex-end;padding-left:32px"><label class="field grow"><span class="label">Only when under (Kč/${per})</span><input id="alTarget" type="number" step="0.1" min="0" inputmode="decimal" value="${esc(S().alerts[it.id].maxUnit || "")}" placeholder="any price"></label><button class="ghost" type="submit" style="height:46px">Save</button></form>` : ""}</div>
     <div class="btnrow"><button class="ghost" type="button" data-act="logPrice" data-item="${esc(it.id)}">Log a price</button>
     ${e ? `<button class="danger" type="button" data-act="removeEntry" data-id="${esc(e.id)}">Remove from list</button>` : `<button class="primary" type="button" data-act="addItem" data-id="${esc(it.id)}">Add to list</button>`}</div>
     ${it.custom ? `<p class="fine">This item isn't in the built-in dictionary. Tesco prices for it come from a search for “${esc(it.q)}”${gh() ? ". Use Fetch now in the menu to look it up straight away." : " in the daily run once the app is connected to GitHub (Settings)."}</p>` : ""}`;
@@ -419,7 +421,7 @@ export function openSettings() {
     <div><h3>Appearance</h3><div class="seg">${["auto", "light", "dark"].map(t => `<button type="button" data-act="theme" data-v="${t}" aria-pressed="${st.theme === t}">${t[0].toUpperCase() + t.slice(1)}</button>`).join("")}</div></div>
     <div><h3>Backup</h3><p class="hint">Your list, recipes, price book and shops, as one file.</p><div class="btnrow"><button class="ghost" type="button" data-act="backup">Save a backup</button><label class="ghost" style="cursor:pointer;text-align:center">Restore<input type="file" accept="application/json,.json" data-change="restore" hidden></label></div></div>
     <div><h3>Start again</h3><button class="danger" type="button" data-act="resetAll">Delete everything on this device</button></div>
-    <p class="fine">Kč Basket · version 2. Prices: Tesco from nakup.itesco.cz, leaflet deals from kupi.cz, read once a day.</p>`);
+    <p class="fine">Kč Basket · version 3. Prices: Tesco from nakup.itesco.cz, leaflet deals from kupi.cz, read once a day.</p>`);
 }
 onChange("storeOn", el => { S().settings.stores[el.dataset.store] = el.checked; DATA.index.cache.clear(); changed(); openSettings(); });
 onChange("photos", el => { S().settings.photos = el.checked; changed(); });
@@ -503,6 +505,7 @@ export function openMenu() {
   const c = gh();
   openSheet("Kč Basket", `<ul class="menu">
     <li><button type="button" data-act="openBook"><span class="qi">₭</span><span><b>Price book</b><small>${S().book.length} prices you've logged · read a receipt</small></span></button></li>
+    <li><button type="button" data-act="openAlerts"><span class="qi">🔔</span><span><b>Sale alerts</b><small>${S().push?.on ? "On" : "Off"} · notifications when your items go on offer</small></span></button></li>
     <li><button type="button" data-act="openBudget"><span class="qi">◔</span><span><b>Budget</b><small>Spending this month, by store</small></span></button></li>
     <li><button type="button" data-act="editStaples"><span class="qi">★</span><span><b>Staples and pantry</b><small>Your basics, and what you usually have</small></span></button></li>
     <li><button type="button" data-act="openHistory"><span class="qi">↗</span><span><b>Price history</b><small>Any item, every store, last 4 months</small></span></button></li>

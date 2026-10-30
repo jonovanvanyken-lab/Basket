@@ -38,6 +38,12 @@ export class GitHub {
     await this.req(`/contents/data/watch.json`, { method: "PUT", body: JSON.stringify({ message: "Add searches", content: b64enc(JSON.stringify(next, null, 1) + "\n"), ...(sha ? { sha } : {}), ...(this.branch ? { branch: this.branch } : {}) }) });
     return true;
   }
+  /** Create or replace a JSON file in the repository. */
+  async writeJson(path, obj, message) {
+    let sha = null;
+    try { const f = await this.req(`/contents/${path}${this.branch ? `?ref=${encodeURIComponent(this.branch)}` : ""}`); sha = f.sha; } catch (e) { if (e.status !== 404) throw e; }
+    await this.req(`/contents/${path}`, { method: "PUT", body: JSON.stringify({ message, content: b64enc(JSON.stringify(obj, null, 1) + "\n"), ...(sha ? { sha } : {}), ...(this.branch ? { branch: this.branch } : {}) }) });
+  }
   async dispatch(inputs) {
     if (!this.branch) await this.check();
     const since = Date.now();
@@ -65,7 +71,7 @@ function explain(status, msg) {
   if (status === 422) return "GitHub couldn't start the run: " + msg;
   return `GitHub said: ${msg}`;
 }
-const b64enc = s => btoa(String.fromCharCode(...new TextEncoder().encode(s)));
+const b64enc = s => { const b = new TextEncoder().encode(s); let out = ""; for (let i = 0; i < b.length; i += 0x8000) out += String.fromCharCode(...b.subarray(i, i + 0x8000)); return btoa(out); };
 const b64dec = s => new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\s/g, "")), c => c.charCodeAt(0)));
 export async function sha1hex(s) {
   const d = await crypto.subtle.digest("SHA-1", new TextEncoder().encode(s));

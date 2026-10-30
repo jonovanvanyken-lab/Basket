@@ -28,7 +28,9 @@ export function toast(msg, undo) {
 // ---- sheet (bottom drawer) ----
 let sheetOnClose = null, lastFocus = null;
 export function openSheet(title, html, { onClose } = {}) {
-  lastFocus = document.activeElement;
+  // the sheet being replaced is finished with
+  const prev = sheetOnClose; sheetOnClose = null; if (prev) prev();
+  if ($("sheet").hidden) lastFocus = document.activeElement;
   $("sheetTitle").textContent = title;
   $("sheetBody").innerHTML = html;
   $("sheet").hidden = false;

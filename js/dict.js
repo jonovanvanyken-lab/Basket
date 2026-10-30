@@ -204,7 +204,8 @@ sauerkraut|sauerkraut|kysan zeli;zeli kysan|kysané zelí||pantry|g|500|
 puff-pastry|puff pastry;pastry;shortcrust pastry;filo pastry;phyllo|listov testo;testo listov;lineck testo;filo|listové těsto||frozen|g|400|
 jam|jam;strawberry jam;apricot jam;marmalade;preserves|dzem;marmelad;povidl|džem|jogurt,susen,kolac,buch|pantry|g|340|
 tea|tea;black tea;green tea;tea bags;herbal tea|caj|čaj|ledov,napoj,limonad|drinks|ks|20|
-coffee|coffee;ground coffee;coffee beans;instant coffee;espresso|kava;kavy|káva|cokol,susen,zmrzlin,tycin,liker,likér,filtr,smetan|drinks|g|250|
+coffee|coffee;ground coffee;coffee beans;espresso;filter coffee|kava;kavy|káva|cokol,susen,zmrzlin,tycin,liker,likér,filtr,smetan,instant,rozpust,3v1,3 v 1,kapsl,capsul|drinks|g|250|
+instant-coffee|instant coffee;soluble coffee|instant kav;kava instant;rozpustn kav;kav rozpustn;instantni kav|instantní káva|cappucc,latte,mlek,cokol|drinks|g|200|
 water|water;sparkling water;mineral water;still water;soda water|voda;vody;mineralk|minerální voda|toalet,micel,kolin,ustni,plet,cist,parf,prac|drinks|ml|1500|
 juice|orange juice;juice;apple juice;fruit juice|dzus;100 stav;stava 100|džus||drinks|ml|1000|
 beer|beer;lager;pilsner|pivo;piva;lezak|pivo|syr,klobas,sklenic,kvasn|drinks|ml|500|
@@ -261,7 +262,7 @@ const ICONS = {
   ham: "🥓", salami: "🥓", sausages: "🌭", eggs: "🥚", milk: "🥛", "plant-milk": "🥛", cream: "🥛", yoghurt: "🥛", butter: "🧈",
   margarine: "🧈", rice: "🍚", pasta: "🍝", "lasagne-sheets": "🍝", noodles: "🍜", oats: "🥣", cereal: "🥣", flour: "🌾",
   sugar: "🍬", honey: "🍯", "olive-oil": "🫒", oil: "🫗", olives: "🫒", "soy-sauce": "🫗", ketchup: "🍅", "peanut-butter": "🥜",
-  peanuts: "🥜", almonds: "🥜", walnuts: "🌰", chocolate: "🍫", cocoa: "🍫", salt: "🧂", pepper: "🧂", tea: "🍵", coffee: "☕",
+  peanuts: "🥜", almonds: "🥜", walnuts: "🌰", chocolate: "🍫", cocoa: "🍫", salt: "🧂", pepper: "🧂", tea: "🍵", coffee: "☕", "instant-coffee": "☕",
   water: "💧", juice: "🧃", beer: "🍺", "red-wine": "🍷", "white-wine": "🥂", crisps: "🥔", biscuits: "🍪", jam: "🍓", tofu: "🧈",
   "toilet-paper": "🧻", "paper-towels": "🧻", "dish-soap": "🧽", "dishwasher-tabs": "🧽", laundry: "🧺", "bin-bags": "🗑️",
   shampoo: "🧴", toothpaste: "🪥", soap: "🧼", foil: "📦", "beef-mince": "🥩", "mixed-mince": "🥩", "pork-mince": "🥩",

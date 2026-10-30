@@ -61,7 +61,7 @@ test("whole fetch job against a fake network", async () => {
   const tesco = JSON.parse(await readFile(join(dir, "tesco.json"), "utf8"));
   assert.ok(tesco.products["2001018475"]); assert.ok(tesco.queries["máslo"].includes("2001018475"));
   const deals = JSON.parse(await readFile(join(dir, "deals.json"), "utf8"));
-  assert.ok(deals.deals.some(d => d.s === "lidl" && d.n === "Rajčata cherry"));
+  assert.ok(deals.deals.some(d => d.s === "lidl" && d.n === "Rajčata cherry" && d.l === "/sleva/rajcata-cherry" && /^\d{4}-\d\d-\d\d$/.test(d.fs)));
   assert.ok(deals.deals.some(d => d.s === "albert"));
   const hist = JSON.parse(await readFile(join(dir, "history.json"), "utf8"));
   assert.ok(hist.items.butter.s.tesco.length === 1, JSON.stringify(hist.items.butter));
@@ -73,4 +73,28 @@ test("whole fetch job against a fake network", async () => {
   assert.equal(tr["Rajčata cherry"], "EN Rajčata cherry");
   assert.equal(tr["Tesco Máslo 82% tuku 250g"], "EN Tesco Máslo 82% tuku 250g");
   assert.equal(status.translate.method, "deepl"); assert.ok(status.translate.added > 5);
+});
+
+import { runAlerts } from "../fetch/alerts.mjs";
+test("sale alerts are sent once per deal", async () => {
+  const tesco = { products: { "2": { t: "Jacobs Krönung mletá káva 250g", p: 129.9, pk: { v: 250, u: "g" }, cc: 99.9, ccUntil: "2026-10-25" } } };
+  const deals = { deals: [{ s: "lidl", f: "Lidl", n: "Máslo", p: 39.9, pk: { v: 250, u: "g" }, d: 27, until: "2026-10-18" }, { s: "albert", n: "Nutella", p: 89.9, d: 20 }] };
+  const cfg = JSON.stringify({ publicKey: "pub", privateKey: "priv", subject: "https://example.github.io/Basket/", subscription: { endpoint: "https://push.example/abc", keys: { p256dh: "x", auth: "y" } } });
+  const alerts = { items: [{ id: "butter" }, { id: "coffee" }], words: ["nutella"], stores: ["tesco", "albert", "lidl"], loyalty: {} };
+  const got = []; const send = async (sub, payload, opts) => { got.push({ sub, payload: JSON.parse(payload), opts }); };
+  const sent = {};
+  const r1 = await runAlerts({ configText: cfg, alerts, sent, tesco, deals, history: {}, today: "2026-10-16", send });
+  assert.equal(r1.ok, true); assert.equal(r1.sent, 1); assert.equal(got.length, 1);
+  assert.equal(got[0].payload.title, "3 of your items are on offer");
+  assert.match(got[0].payload.body, /Butter — Lidl 39,90/); assert.match(got[0].payload.body, /Coffee — Tesco online 99,90/); assert.match(got[0].payload.body, /Nutella/);
+  assert.equal(got[0].opts.vapidDetails.privateKey, "priv");
+  const r2 = await runAlerts({ configText: cfg, alerts, sent, tesco, deals, history: {}, today: "2026-10-17", send });
+  assert.equal(r2.sent, 0, "nothing new the next day"); assert.equal(got.length, 1);
+  const gone = async () => { const e = new Error("gone"); e.statusCode = 410; throw e; };
+  const r3 = await runAlerts({ configText: cfg, alerts, sent: {}, tesco, deals, history: {}, today: "2026-10-16", send: gone });
+  assert.equal(r3.ok, false); assert.match(r3.error, /expired/);
+  const t = await runAlerts({ configText: cfg, alerts: null, sent: {}, tesco, deals, history: {}, today: "2026-10-16", send, test: true });
+  assert.equal(t.sent, 1); assert.match(got[1].payload.body, /working/);
+  const bad = await runAlerts({ configText: "nope", alerts, sent: {}, tesco, deals, history: {}, today: "2026-10-16", send });
+  assert.equal(bad.ok, false);
 });

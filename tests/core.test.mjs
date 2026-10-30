@@ -151,3 +151,29 @@ test("English names", () => {
   assert.equal(en("Madeta"), "Madeta"); // unknown words are kept
   useSaved({ "Rajčata cherry": "Cherry tomatoes (DeepL)" }); assert.equal(en("Rajčata cherry"), "Cherry tomatoes (DeepL)"); useSaved({});
 });
+
+import { analyser, alertMatches, wasPrice, savingKc, watchHit, brandWords, dealKey } from "../js/deals.js";
+test("deal analysis", () => {
+  const tesco = { fetchedAt: "2026-10-16T05:00:00Z", products: {
+    "1": { t: "Tesco Máslo 82% tuku 250g", p: 27.9, u: 111.6, per: "kg", pk: { v: 250, u: "g" } },
+    "2": { t: "Jacobs Krönung mletá káva 250g", p: 129.9, u: 519.6, per: "kg", pk: { v: 250, u: "g" }, cc: 99.9 },
+  } };
+  const deals = { deals: [
+    { s: "lidl", f: "Lidl", n: "Máslo", p: 39.9, pk: { v: 250, u: "g" }, d: 27, until: "2026-10-18", kc: "mlecne-vyrobky-a-vejce", fs: "2026-10-15" },
+    { s: "albert", f: "Albert", n: "Káva mletá Jacobs", p: 109.9, pk: { v: 250, u: "g" }, d: 31, until: "2026-10-20", kc: "nealko-napoje", fs: "2026-10-01" },
+    { s: "lidl", f: "Lidl", n: "Nutella", p: 89.9, pk: { v: 600, u: "g" }, d: 20, until: "2026-10-18", kc: "sladkosti-a-slane-snacky" },
+  ] };
+  const history = { items: { coffee: { per: "kg", s: { tesco: [["2026-09-01", 560], ["2026-10-01", 519.6]] } } } };
+  const index = buildIndex(tesco, deals);
+  const an = analyser({ index, history, today: "2026-10-16" });
+  const butter = an(index.deals[0]), coffee = an(index.deals[1]);
+  assert.equal(butter.it.id, "butter"); assert.equal(butter.real.pct, -43, "Lidl butter dearer than Tesco's own"); assert.equal(butter.isNew, true);
+  assert.equal(coffee.it.id, "coffee"); assert.equal(coffee.real.pct, 15); assert.equal(coffee.lowest, true); assert.equal(coffee.stockUp, true); assert.equal(coffee.isNew, false);
+  assert.equal(wasPrice({ p: 70, d: 30 }), 100); assert.equal(savingKc({ p: 70, d: 30 }), 30);
+  assert.equal(watchHit("Nutella 600g", ["nutella"]), "nutella"); assert.equal(watchHit("Máslo", ["nutella"]), null);
+  assert.deepEqual(brandWords("Pivo světlý ležák Radegast"), ["Radegast"]);
+  const m = alertMatches({ index, history, today: "2026-10-16", alerts: { items: [{ id: "coffee" }, { id: "butter", maxUnit: 120 }], words: ["nutella"], minDisc: 0, stores: ["tesco", "albert", "lidl"], loyalty: {} } });
+  const names = m.map(x => `${x.store}:${x.it?.id || x.word}`).sort();
+  assert.deepEqual(names, ["albert:coffee", "lidl:nutella", "tesco:coffee"], JSON.stringify(m.map(x=>[x.store,x.it?.id,x.word])));
+  assert.ok(dealKey(deals.deals[0]).startsWith("lidl|Máslo|39.9"));
+});

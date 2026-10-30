@@ -242,3 +242,24 @@ input[type=checkbox]{width:22px;height:22px;flex:none;accent-color:var(--accent)
 .prices .src{display:block}
 .raw b{color:var(--ink);font-weight:650}
 @media (max-width:360px){.th{width:36px;height:36px;font-size:18px}.items>li{column-gap:8px}.panel{padding:14px 12px}.items .px{font-size:13.5px}}
+
+/* deals: filters, rows, alerts */
+.dealrow .rowbtn{display:flex;flex-direction:column;gap:3px}
+.dealrow .meta:empty{display:none}
+.dealrow .px .save{color:var(--ok);font-weight:650}
+.pill.new{color:#fff;background:var(--accent)}
+.pill.watch{color:var(--warn)}
+.group-h{display:flex;align-items:center;gap:8px;padding:14px 0 4px;border-top:2px solid var(--line);margin-top:6px}
+.group-h:first-of-type{border-top:0}
+details.more{border:1px solid var(--line);border-radius:10px;padding:9px 12px;background:var(--bg)}
+details.more summary{cursor:pointer;font-weight:600;font-size:14px}
+.small-seg button{padding:7px 2px;font-size:13px}
+.filters .label{display:block;margin-bottom:5px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.filters select{padding:9px 10px}
+.watchbox{margin:6px 0 2px}
+.watchbox .chips{align-items:center}
+.alerts-line{display:block;width:100%;text-align:left;border:0;margin:10px 0 4px;color:var(--ink)}
+.steps{margin:8px 0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+.steps code,.fine code{font-family:var(--f-mono);font-size:12.5px;background:var(--track);padding:1px 5px;border-radius:5px}
+textarea.code{font-family:var(--f-mono);font-size:11.5px;min-height:0;word-break:break-all}

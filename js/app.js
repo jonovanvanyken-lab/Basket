@@ -2,7 +2,9 @@
 import { load, S, save, saveWorked } from "./state.js";
 import { loadData, addText, addEntry, changed, bump, snapshot, restore, suggest, itemOf, plan, DATA } from "./core.js";
 import { $, esc, on, onChange, ACTIONS, CHANGES, toast, closeSheet, sheetOpen } from "./ui.js";
-import { renderList, renderPlan, renderShop, renderDeals, renderRecipes, setDealView, setDealFilter, moreDeals } from "./views.js";
+import { renderList, renderPlan, renderShop, renderRecipes } from "./views.js";
+import { renderDeals, setDealView, setDealFilter, moreDeals, unseenCount } from "./dealsview.js";
+import { alertSuggest, checkPush, openAlerts } from "./alerts-ui.js";
 import { openMenu, freshness, applyTheme, openStatus, stapleSuggest, historySuggest, renderItemSheet } from "./sheets.js";
 
 const TABS = { list: ["List", renderList], plan: ["Plan", renderPlan], shop: ["Shop", renderShop], deals: ["Deals", renderDeals], recipes: ["Recipes", renderRecipes] };
@@ -25,11 +27,11 @@ function render() {
   window.scrollTo(0, scroll);
   const f = freshness(); const fb = $("freshBtn");
   fb.className = "fresh " + f.cls; fb.innerHTML = `<span class="dot"></span>${esc(f.text)}`;
-  // badge with the number of unticked items on the Shop tab
-  const shopBtn = document.querySelector('.tabbar [data-go="shop"]');
-  const left = S().list.filter(e => !e.have && !S().checked[e.id]).length;
-  shopBtn.querySelector(".badge")?.remove();
-  if (left) shopBtn.insertAdjacentHTML("beforeend", `<span class="badge">${left}</span>`);
+  // badges: unticked items on the Shop tab, unseen offers on your items on the Deals tab
+  const badge = (go, n) => { const b = document.querySelector(`.tabbar [data-go="${go}"]`); b.querySelector(".badge")?.remove(); if (n) b.insertAdjacentHTML("beforeend", `<span class="badge">${n > 99 ? "99+" : n}</span>`); };
+  badge("shop", S().list.filter(e => !e.have && !S().checked[e.id]).length);
+  const unseen = unseenCount(); badge("deals", unseen);
+  try { if (navigator.setAppBadge) unseen ? navigator.setAppBadge(unseen) : navigator.clearAppBadge(); } catch {}
 }
 let raf = 0;
 function schedule() { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => { render(); if (sheetOpen()) renderItemSheet(); }); }
@@ -105,6 +107,7 @@ document.addEventListener("input", ev => {
   if (el.dataset.input === "dealQ") { setDealFilter("q", el.value); render(); return; }
   if (el.dataset.input === "stQ") { stapleSuggest(el.value); return; }
   if (el.dataset.input === "hiQ") { historySuggest(el.value); return; }
+  if (el.dataset.input === "alQ") { alertSuggest(el.value); return; }
 });
 document.addEventListener("keydown", ev => { if (ev.key === "Escape" && sheetOpen()) closeSheet(); });
 $("menuBtn").addEventListener("click", openMenu);
@@ -113,7 +116,12 @@ $("freshBtn").addEventListener("click", openStatus);
 // ---- start ----
 load(); applyTheme();
 try { const t = sessionStorage.getItem("kcb.tab"); if (t && TABS[t]) tab = t; } catch {}
+// a tap on a sale-alert notification opens the app at #deals
+function fromHash() { if (location.hash === "#deals") { tab = "deals"; setDealView("watch"); history.replaceState(null, "", location.pathname + location.search); return true; } return false; }
+fromHash();
+window.addEventListener("hashchange", () => { if (fromHash()) render(); });
 render();
+checkPush().then(r => { if (r === "lost") { $("banners").innerHTML = `<div class="banner warn"><span>Sale alerts stopped working on this phone. Turn them on again to get a new setup code.</span><button class="link" type="button" data-act="openAlerts">Fix</button></div>`; } });
 loadData().catch(e => { DATA.error = e; render(); });
 if ("serviceWorker" in navigator && window.isSecureContext) navigator.serviceWorker.register("sw.js").catch(() => {});
 window.addEventListener("online", () => loadData());

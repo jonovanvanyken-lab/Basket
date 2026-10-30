@@ -47,6 +47,8 @@ export function parseKupi(html, store, cat, today = new Date()) {
   for (const g of groups) {
     const nameEl = g.querySelector(".product_name strong") || g.querySelector(".product_name") || g.querySelector("h2, h3, strong");
     const name = clean(nameEl?.text || ""); if (!name) continue;
+    const href = (g.querySelector(".product_name a") || g.querySelector("a[href*='/sleva/']"))?.getAttribute("href") || "";
+    const link = /^\/[\w\-/.%]+$/.test(href) ? href : "";
     let rows = g.querySelectorAll(".discount_row");
     if (!rows.length) rows = g.querySelectorAll('[class*="discount_row"], tr');
     if (!rows.length) rows = [g];
@@ -61,7 +63,7 @@ export function parseKupi(html, store, cat, today = new Date()) {
         amount: clean(r.querySelector(".discount_amount")?.text || ""),
         validity: clean(r.querySelector(".discounts_validity")?.text || ""),
       }, today);
-      if (d) { d.s = store; d.c = KUPI_CATS[cat] || "other"; d.kc = cat; out.push(d); }
+      if (d) { d.s = store; d.c = KUPI_CATS[cat] || "other"; d.kc = cat; if (link) d.l = link; out.push(d); }
     }
   }
   return out;

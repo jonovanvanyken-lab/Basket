@@ -52,6 +52,26 @@ Out of the box the English comes from a built-in grocery glossary, word for word
 
 From the next daily run, every new name is translated once and saved in `data/translations.json`. The free allowance (500,000 characters a month) covers this comfortably. If it ever runs out, the glossary fills in until it resets.
 
+## Deals
+
+- **For you** lists offers on your staples, list, recipes and alert items, plus anything that mentions one of your **watch words** (brands or products, such as "Nutella" or "Pilsner"). The Deals tab shows a count of offers you haven't seen yet.
+- **All deals** lets you choose any mix of shops and categories, sort by % off, saving in Kč, value against Tesco online, price per kg or litre, price, ending soonest, newest or A–Z, and switch between one list and grouped by shop. **More filters** covers minimum discount, card or app deals, timing (on now, ending soon, starting later), hiding offers that cost more than Tesco online, stock-up deals, new deals, and categories to hide everywhere. Your choices are remembered.
+- **Labels on each deal:** *New* (appeared in the last two days), *Stock up* (keeps well and is the lowest price in 8 weeks), *x % under Tesco* or *Tesco online cheaper* (compared with Tesco online's cheapest everyday price for the same item), and the saving in Kč.
+- **Tap a deal** for the details: the same item at every shop, other pack sizes, adding it to your list with a quantity, alerts for that item, watching its brand, and a link to the deal on kupi.cz.
+
+## Sale alerts (push notifications)
+
+Every morning, after reading prices, the job sends one notification listing anything on your alert list that has gone on offer. It covers your staples (optional), items you've switched on, any watch words, and items under a target price you set. Each offer is only mentioned once.
+
+It needs the GitHub connection (below), an iPhone on iOS 16.4 or later, and the app opened from its Home Screen icon. To set it up:
+
+1. If you uploaded the app before sale alerts existed, update the workflow file. On GitHub open `.github/workflows/prices.yml`, click the pencil, replace everything with the contents of `fetch/workflow-prices.yml`, and commit.
+2. In the app: **Menu → Sale alerts → Turn on sale alerts**, and allow notifications.
+3. Copy the setup code it shows. On GitHub: **Settings → Secrets and variables → Actions → New repository secret**, name it `PUSH_CONFIG`, paste, and **Add secret**.
+4. Back in the app, press **Send a test notification**. It arrives within a minute or two.
+
+The setup code holds this phone's notification address and the keys to sign messages to it. It stays in the secret, which only the job can read. Your alert list is saved as `data/alerts.json`, which is visible in the public repository.
+
 ## The GitHub connection (optional)
 
 Without it, the app works from the daily prices. With it, you can press **Fetch now**, read recipe links, and give your own items (ones not in the dictionary) their own Tesco search straight away.
