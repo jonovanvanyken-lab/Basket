@@ -115,13 +115,13 @@ async function main() {
     await save("deals.json", deals);
   }
 
-  // ---- usual prices ("Běžná cena") from kupi.cz search, first page only ----
+  // ---- usual prices ("Běžná cena") from kupi.cz product pages ----
   if ((!QUICK && !ONLY) || ONLY === "usual") {
     const prevU = await readJson("usual.json", { items: {} });
-    const qs = [...new Set(ITEMS.map(x => x.q))];
-    const u = await fetchUsual(qs, { log, delay: polite(1100), prev: prevU, today: runAt.slice(0, 10) });
+    const u = await fetchUsual(deals.deals || [], { log, delay: polite(1100), prev: prevU, today: runAt.slice(0, 10), alerts: await readJson("alerts.json", null),
+      budget: env.USUAL_BUDGET ? +env.USUAL_BUDGET : undefined });
     if (u.ok) await save("usual.json", { fetchedAt: runAt, source: "kupi.cz", items: u.items });
-    status.usual = { ok: u.ok > 0 && u.found > 0, searched: u.ok, failed: u.failed, found: u.found, products: Object.keys(u.items).length, errors: u.errors, at: u.ok ? runAt : status.usual?.at || null };
+    status.usual = { ok: u.ok > 0, read: u.ok, failed: u.failed, found: u.found, products: u.usable, due: u.due, errors: u.errors, at: u.ok ? runAt : status.usual?.at || null };
   }
 
   // ---- English names (DeepL, when a key is set up) ----

@@ -467,7 +467,7 @@ export function openStatus() {
   openSheet("Price data", `<div class="status-list">
     ${line(storeTag("tesco") + " online", st.tesco, x => `${x.products} products, ${x.searched} searches, ${ago(x.at)}${x.method ? ` (${x.method})` : ""}`)}
     ${leaf.map(([s, x]) => line(storeTag(s) + " leaflet", x, y => `${y.deals} deals, ${ago(y.at)}`)).join("")}
-    ${st.usual ? line("Usual prices <span class=\"muted small\">kupi.cz</span>", st.usual, y => `${y.products} products, ${ago(y.at)}`) : ""}
+    ${st.usual ? line("Usual prices <span class=\"muted small\">kupi.cz</span>", st.usual, y => `${y.products} products known, ${y.found} new today, ${ago(y.at)}`) : ""}
     ${st.runAt ? `<p class="fine">Last run ${esc(new Date(st.runAt).toLocaleString("en-GB"))}${st.quick ? " (quick)" : ""}.</p>` : `<p class="hint">The daily run hasn't happened yet. On GitHub, open the repository's Actions tab, choose Prices, and press Run workflow once.</p>`}
     ${st.tesco?.errors?.length ? `<details><summary class="small muted">Tesco messages</summary><code>${st.tesco.errors.map(esc).join("<br>")}</code></details>` : ""}
     ${st.tesco?.notes?.length ? `<p class="fine">${esc(st.tesco.notes.join(" · "))}</p>` : ""}</div>

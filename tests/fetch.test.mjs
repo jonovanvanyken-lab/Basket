@@ -74,8 +74,8 @@ test("whole fetch job against a fake network", async () => {
   assert.equal(tr["Tesco Máslo 82% tuku 250g"], "EN Tesco Máslo 82% tuku 250g");
   assert.equal(status.translate.method, "deepl"); assert.ok(status.translate.added > 5);
   const usual = JSON.parse(await readFile(join(dir, "usual.json"), "utf8"));
-  assert.equal(usual.items["/sleva/instantni-kava-jacobs-velvet"].p, 235.38);
-  assert.ok(status.usual.ok && status.usual.found >= 3 && status.usual.searched > 150, JSON.stringify(status.usual));
+  assert.equal(usual.items["/sleva/rajcata-cherry"].p, 49.9);
+  assert.ok(status.usual.ok && status.usual.found >= 1, JSON.stringify(status.usual));
 });
 
 import { runAlerts } from "../fetch/alerts.mjs";
@@ -102,27 +102,40 @@ test("sale alerts are sent once per deal", async () => {
   assert.equal(bad.ok, false);
 });
 
-import { parseUsual } from "../fetch/usual.mjs";
+import { parseProductPage, packOf, fetchUsual } from "../fetch/usual.mjs";
 import { analyser as mkAnalyser, usualLookup } from "../js/deals.js";
 import { buildIndex as bIdx } from "../js/plan.js";
-test("kupi.cz usual prices", async () => {
-  const cards = parseUsual(await fx("kupi-search.html"));
-  const by = Object.fromEntries(cards.map(c => [c.l, c]));
-  assert.equal(cards.length, 3, JSON.stringify(cards)); // the 0,00 Kč one is skipped
-  assert.deepEqual([by["/sleva/instantni-kava-jacobs-velvet"].p, by["/sleva/instantni-kava-jacobs-velvet"].pk], [235.38, { v: 200, u: "g" }]);
-  assert.equal(by["/sleva/mleta-kava-standard-jihlavanka"].pk, null, "several sizes: the usual price's size is unknown");
-  assert.deepEqual(by["/sleva/mleta-kava-jacobs-aroma-standard"].pk, { v: 250, u: "g" }, "all offers share one size");
-  const usual = { items: Object.fromEntries(cards.map(c => [c.k, c])) };
-  const deals = { deals: [
-    { s: "albert", n: "Instantní káva Jacobs Velvet", p: 129.9, pk: { v: 200, u: "g" }, d: 43, l: "/sleva/instantni-kava-jacobs-velvet" },
-    { s: "albert", n: "Mletá káva Standard Jihlavanka", p: 189, pk: { v: 1000, u: "g" }, d: 52 },
-    { s: "lidl", n: "Mletá káva Jacobs Aroma Standard", p: 159.9, pk: { v: 250, u: "g" } }, // matched by name, dearer than usual
-    { s: "lidl", n: "Instantní káva Jacobs Velvet", p: 99.9, pk: { v: 100, u: "g" }, l: "/sleva/instantni-kava-jacobs-velvet" }, // other size
-  ] };
-  const an = mkAnalyser({ index: bIdx(null, deals), usual, today: "2026-10-30" });
-  const [velvet, jihl, aroma, small] = bIdx(null, deals).deals.map(an);
+test("kupi.cz usual prices from product pages", async () => {
+  assert.equal(parseProductPage(await fx("kupi-product.html")), 49.9, "0 Kč label is skipped, the description's price is used");
+  assert.equal(parseProductPage("<p>Běžná cena: <b>235,38 Kč</b></p>"), 235.38);
+  assert.equal(parseProductPage("<p>Nic</p>"), null);
+  const deals = [
+    { s: "albert", n: "Instantní káva Jacobs Velvet", p: 129.9, pk: { v: 200, u: "g" }, d: 43, l: "/sleva/velvet" },
+    { s: "penny", n: "Instantní káva Jacobs Velvet", p: 139.9, pk: { v: 200, u: "g" }, l: "/sleva/velvet" },
+    { s: "albert", n: "Mletá káva Jihlavanka", p: 189, pk: { v: 1000, u: "g" }, d: 52, l: "/sleva/jihl" },
+    { s: "billa", n: "Mletá káva Jihlavanka", p: 64.9, pk: { v: 150, u: "g" }, l: "/sleva/jihl" },
+    { s: "kaufland", n: "Nutella", p: 99.9, pk: { v: 600, u: "g" }, d: 10, l: "/sleva/nutella" },
+    { s: "lidl", n: "Máslo", p: 39.9, pk: { v: 250, u: "g" }, d: 20, l: "/sleva/maslo" },
+  ];
+  assert.deepEqual(packOf("/sleva/velvet", deals), { v: 200, u: "g" }); assert.equal(packOf("/sleva/jihl", deals), null);
+  const asked = [];
+  const pages = { "/sleva/velvet": "Běžná cena: 235,38 Kč", "/sleva/jihl": "běžně stojí 105,81 Kč", "/sleva/nutella": "Běžná cena 129,90 Kč", "/sleva/maslo": "nic" };
+  const fetchImpl = async url => { const l = new URL(url).pathname; asked.push(l); return { ok: true, status: 200, text: async () => pages[l] }; };
+  const r = await fetchUsual(deals, { fetchImpl, today: "2026-10-30", alerts: { items: [], words: ["nutella"] }, budget: 3 });
+  assert.equal(asked[0], "/sleva/nutella", "watch words first"); assert.equal(asked.length, 3, "budget respected");
+  assert.equal(r.items["/sleva/velvet"].p, 235.38); assert.equal(r.items["/sleva/jihl"].none, 1, "several sizes: not usable");
+  const again = await fetchUsual(deals, { fetchImpl, today: "2026-11-02", prev: { items: r.items }, budget: 10 });
+  assert.deepEqual(asked.slice(3), ["/sleva/maslo"], "fresh pages aren't read again");
+  assert.equal(again.items["/sleva/maslo"].none, 1);
+  let calls = 0; const refused = async () => { calls++; return { ok: false, status: 403, text: async () => "" }; };
+  const many = Array.from({ length: 20 }, (_, i) => ({ s: "lidl", n: "x" + i, p: 1, pk: { v: 1, u: "ks" }, l: "/sleva/x" + i }));
+  const blocked = await fetchUsual(many, { fetchImpl: refused, today: "2026-10-30" });
+  assert.equal(calls, 6, "stops after 6 refusals"); assert.equal(blocked.ok, 0);
+  // the app matches deals to usual prices by link and pack size
+  const usual = { items: r.items };
+  const an = mkAnalyser({ index: bIdx(null, { deals: [deals[0], { ...deals[0], s: "lidl", p: 99.9, pk: { v: 100, u: "g" } }, { ...deals[4], p: 139.9 }] }), usual, today: "2026-10-30" });
+  const [velvet, small, nutella] = bIdx(null, { deals: [deals[0], { ...deals[0], s: "lidl", p: 99.9, pk: { v: 100, u: "g" } }, { ...deals[4], p: 139.9 }] }).deals.map(an);
   assert.deepEqual([velvet.usual.p, velvet.usual.pct, velvet.saving], [235.38, 45, 105.48]);
-  assert.equal(jihl.usual, null); assert.equal(small.usual, null);
-  assert.equal(aroma.usual.pct, -10);
+  assert.equal(small.usual, null, "other size"); assert.equal(nutella.usual.pct, -8, "dearer than usual");
   assert.equal(usualLookup(usual)({ n: "x", pk: null }), null);
 });

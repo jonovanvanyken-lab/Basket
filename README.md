@@ -10,7 +10,7 @@ The app runs on your phone. Your list, recipes, price book and budget stay on th
 |---|---|---|
 | Tesco | The online price of every item in the built-in dictionary (about 190), plus your own items, with Clubcard prices and offers | nakup.itesco.cz, every morning |
 | Albert, Lidl | This week's leaflet deals only | kupi.cz, every morning |
-| Usual prices | kupi.cz's "Běžná cena" for products in its search results, used to check whether an offer is a real saving | kupi.cz search (first page per item), every morning |
+| Usual prices | kupi.cz's "Běžná cena" for products on offer, used to check whether an offer is a real saving | kupi.cz product pages, up to 200 a morning, each kept for 30 days |
 | Any shop | Prices you log, read from receipts, or confirm when you finish a shop | your price book |
 
 Albert and Lidl don't publish their full shelf prices anywhere, so for everyday items that aren't on offer, the app relies on your price book. Reading a couple of receipts fills it quickly.
@@ -57,7 +57,7 @@ From the next daily run, every new name is translated once and saved in `data/tr
 
 - **For you** lists offers on your staples, list, recipes and alert items, plus anything that mentions one of your **watch words** (brands or products, such as "Nutella" or "Pilsner"). The Deals tab shows a count of offers you haven't seen yet.
 - **All deals** lets you choose any mix of shops and categories, sort by % off, saving in Kč, value against Tesco online, price per kg or litre, price, ending soonest, newest or A–Z, and switch between one list and grouped by shop. **More filters** covers minimum discount, card or app deals, timing (on now, ending soon, starting later), hiding offers that cost more than Tesco online, stock-up deals, new deals, and categories to hide everywhere. Your choices are remembered.
-- **Usual price:** where kupi.cz lists a usual price ("Běžná cena") for the same product and pack size, the deal shows it, how far below it the offer is, and the saving in Kč. Offers that cost more than the usual price are flagged *Above usual price*. Products sold in several sizes only get a usual price when kupi.cz makes clear which size it's for.
+- **Usual price:** where kupi.cz lists a usual price ("Běžná cena") for the same product and pack size (read from its product pages, up to 200 new ones each morning, starting with your alert items, so coverage grows over the first week or two), the deal shows it, how far below it the offer is, and the saving in Kč. Offers that cost more than the usual price are flagged *Above usual price*. Products sold in several sizes only get a usual price when kupi.cz makes clear which size it's for.
 - **Labels on each deal:** *New* (appeared in the last two days), *Stock up* (keeps well and is the lowest price in 8 weeks), *x % under Tesco* or *Tesco online cheaper* (compared with Tesco online's cheapest everyday price for the same item), and the saving in Kč.
 - **Tap a deal** for the details: the same item at every shop, other pack sizes, adding it to your list with a quantity, alerts for that item, watching its brand, and a link to the deal on kupi.cz.
 
@@ -92,7 +92,7 @@ Open **Menu → Price data**. It shows when each source was last read, and how.
 - **Tesco** is read through Tesco's own search API, or the search page if that fails. If both are refused from GitHub's servers, you can run the job on your own computer instead: `cd fetch && npm install && node fetch.mjs`, then upload the changed `data` folder. If Tesco changes its public API key, add the new one as a repository secret called `TESCO_API_KEY`.
 - **Leaflets** come from kupi.cz. If one shop's page changes, the app keeps that shop's last good deals until they expire.
 
-The job waits one to two seconds between pages and runs once a day. It only loads pages that kupi.cz's robots.txt allows for automated tools: the shop and category listings, and the first page of a search (never page 2 onwards). It reads the same public pages a shopper sees. Their terms don't invite automated reading, so keep it to personal use.
+The job waits one to two seconds between pages and runs once a day. It only loads pages that kupi.cz's robots.txt allows for automated tools: the shop and category listings, and product pages for usual prices. It doesn't use kupi.cz's search, which refuses automated requests. It reads the same public pages a shopper sees. Their terms don't invite automated reading, so keep it to personal use.
 
 ## Your data
 
